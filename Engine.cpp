@@ -97,6 +97,6 @@ void Engine::registerAllHotKey()
     RegisterHotKey(NULL, 10, MOD_ALT | MOD_NOREPEAT, 57);
 }
 
-std::string Engine::getStartCout() { return "\tThe game is expected to launch\n\n"; }
+std::string Engine::getStartCout() { return "\tThe game is expected to launch\nhttps://github.com/Riminas/AvLoadWar3.git\n\n"; }
 std::string Engine::getStartCout2() { return "\tTo download the last save, press the key combination ' alt + 0 '\n\tLoading the list of heroes ' alt + 9 '\n"; }
 std::string Engine::getRazelCout() { return "___________________________________________________________________________________\n"; }

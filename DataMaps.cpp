@@ -29,6 +29,9 @@ bool DataMaps::PutSaveCode() {
     }
 
     std::cout << "Error: Not information file ( " << m_putDatMapPut << "\\" << m_NameMaps << " )" << std::endl;
+    std::cout << "create file ( " << m_NameMaps << " ) and save code directory" << std::endl;
+    std::string str = "notepad.exe " + m_putDatMapPut + "\\" + m_NameMaps;
+    system(str.c_str());
     return false;
 }
 
