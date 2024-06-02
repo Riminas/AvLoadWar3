@@ -12,22 +12,21 @@ void Engine::engine1()
         std::cout << getStartCout();
 
         isWhileProcessWarcraftIII();
-        
+
         std::cout << getRazelCout();
         std::cout << getStartCout2();
 
         whileMSG();
-       
     }
 }
 
-bool Engine::isProcessWarcraftIII()// варкрафт запущен изи закрыт
+bool Engine::isProcessWarcraftIII()
 {
     const std::wstring nameProces_136 = L"Warcraft III.exe";
 
     HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hSnapshot == INVALID_HANDLE_VALUE) {
-        return 0;
+        return false;
     }
 
     PROCESSENTRY32 pe;
@@ -35,49 +34,41 @@ bool Engine::isProcessWarcraftIII()// варкрафт запущен изи закрыт
 
     if (!Process32First(hSnapshot, &pe)) {
         CloseHandle(hSnapshot);
-        return 0;
+        return false;
     }
 
+    bool isRunning = false;
     do {
         if (pe.szExeFile == nameProces_136) {
-            CloseHandle(hSnapshot);
-            return 1;
+            isRunning = true;
+            break;
         }
     } while (Process32Next(hSnapshot, &pe));
 
     CloseHandle(hSnapshot);
-    return 0;
+    return isRunning;
 }
 
 void Engine::isWhileProcessWarcraftIII() {
-    while (true) {
-        if (isProcessWarcraftIII()) {
-            break;
-        }
+    while (!isProcessWarcraftIII()) {
         Sleep(500);
     }
 }
 
 void Engine::whileMSG() {
-    int time_delay = 1;
-    time_delay *= CLOCKS_PER_SEC;
+    const int time_delay = 200;
     clock_t now = clock();
 
     MSG msg = { 0 };
     while (GetMessage(&msg, NULL, 0, 0) != 0)
     {
-        if (msg.message == WM_HOTKEY)
+        if (msg.message == WM_HOTKEY && (msg.wParam == 1 || msg.wParam == 10))
         {
-            if (msg.wParam == 1 || msg.wParam == 10)
-            {
-                if (!(clock() - now < time_delay)) {// 1 загрузка в 1 секунду (анти спам и зависания)
-
-                    std::cout << getRazelCout();
-                    EngineFile EngineFile_;
-                    if (msg.wParam == 1) EngineFile_.engineFile1(true);
-                    else if(msg.wParam == 10) EngineFile_.engineFile1(false);
-                    now = clock();
-                }
+            if (clock() - now >= time_delay) {
+                std::cout << getRazelCout();
+                EngineFile EngineFile_;
+                EngineFile_.engineFile1(msg.wParam == 1);
+                now = clock();
             }
         }
     }
@@ -85,16 +76,9 @@ void Engine::whileMSG() {
 
 void Engine::registerAllHotKey()
 {
-    RegisterHotKey(NULL, 1, MOD_ALT | MOD_NOREPEAT, 48);
-    RegisterHotKey(NULL, 2, MOD_ALT | MOD_NOREPEAT, 49);
-    RegisterHotKey(NULL, 3, MOD_ALT | MOD_NOREPEAT, 50);
-    RegisterHotKey(NULL, 4, MOD_ALT | MOD_NOREPEAT, 51);
-    RegisterHotKey(NULL, 5, MOD_ALT | MOD_NOREPEAT, 52);
-    RegisterHotKey(NULL, 6, MOD_ALT | MOD_NOREPEAT, 53);
-    RegisterHotKey(NULL, 7, MOD_ALT | MOD_NOREPEAT, 54);
-    RegisterHotKey(NULL, 8, MOD_ALT | MOD_NOREPEAT, 55);
-    RegisterHotKey(NULL, 9, MOD_ALT | MOD_NOREPEAT, 56);
-    RegisterHotKey(NULL, 10, MOD_ALT | MOD_NOREPEAT, 57);
+    for (int i = 0; i <= 9; ++i) {
+        RegisterHotKey(NULL, i + 1, MOD_ALT | MOD_NOREPEAT, 48 + i);
+    }
 }
 
 std::string Engine::getStartCout() { return "\tThe game is expected to launch\nhttps://github.com/Riminas/AvLoadWar3.git\n\n"; }

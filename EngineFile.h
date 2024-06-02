@@ -8,8 +8,9 @@ public:
 private:
 	void engineTip1(const bool& isLastSaveCode);
 	void engineTip2();
-	bool createFileDataMaps();
 	bool isProcessWarcraftIII();
+
+	std::string file_time_to_string(const std::filesystem::file_time_type& ftime);
 
 	std::vector<DataPatc::listHero> m_ListHero;
 	std::string m_FileName = "\0";

@@ -1,25 +1,30 @@
-﻿
-
-#include "Engine.h"
+﻿#include "Engine.h"
 #include <iostream>
 #include <locale>
 #include <filesystem>
-#include "ii.h"
+
+#include "StringToString.h"
 
 int main()
 {
-    //setlocale(LC_ALL, "Russian");
+    setlocale(LC_ALL, "Russian");
 
-    //std::vector<std::pair<std::pair<std::string, std::string>, double>> outInput = {
-    //    {{"Narnia_RPG_3_10.4J_ENG_FIX", "Narnia_RPG_3_10.4J_ENG_FIX"}, 1.0 },
-    //    {{"Narnia_RPG_3_10.4J_ENG_FIX", "Narnia_RPG_3_10.4J_ENG_FIX"}, 1.0 },
-    //    {{"Narnia_RPG_3_9_ENG_FIX", "Narnia_RPG_3_10.4J_ENG_FIX"}, 1.0 },
-    //    {{"Narnia_RPG_3_9_ENG_FIX", "Narnia_RPG_3_10.4J_ENG"}, 1.0 },
-    //    {{"Narnia_RPG_2", "Narnia_RPG_3"}, 0.5 },
-    //    {{"Eng_Mep_rpg_v5", "Mep_rpg"}, 1.0 },
-    //    {{"Eng_Mep_rpg_v5", "Narnia_RPG_3_10.4J_ENG"}, 0.0 },
+    //std::vector<std::pair<std::pair<std::string, std::string>, bool>> outInput = {
+    //    {{"Narnia_RPG_3_10.4J_ENG_FIX", "Narnia_RPG_3_10.4J_ENG_FIX.w3x"}, true },
+    //    {{"Narnia_RPG_3_10.4J_ENG_FIX", "43322_Narnia_RPG_3_10.4J_ENG_FIX"}, true },
+    //    {{"Narnia_RPG_3_9_ENG_FIX", "Narnia_RPG_3_10.4J_ENG_FIX"}, true },
+    //    {{"Narnia_RPG_3_9_ENG_FIX", "Narnia_RPG_3_10.4J_ENG"}, true },
+    //    {{"11483_NARNIARPG2[Worl_nal_Eng_2.23.w3x", "Narnia_RPG_3"}, false },
+    //    {{"11483_NARNIARPG2[Worl_nal_Eng_2.23.w3x", "NARNIARPG2[World]Final Eng 2.23.w3x"}, true },
+    //    {{"Eng_Mep_rpg_v5", "Mep_rpg"}, true },
+    //    {{"Eng_Mep_rpg_v5", "Narnia_RPG_3_10.4J_ENG"}, false },
+    //    {{"43828_Fish_RPG_0.478.w3x", "432_Fish_RPG_0.478.w3x"}, true },
     //};
 
+    //StringToString StringToString_;
+    //StringToString_.testStringComparison(outInput);
+
+    //std::cin.get();
     ////std::string str1 = "35783_Narnia_RPG_3_10.4J_ENG_FIX.w3x";
     ////std::string str2 = "Narnia_RPG_3_10.4J_ENG_FIX.w3x";
 
@@ -40,82 +45,80 @@ int main()
 
     return 0;
 }
-
-//#include <Windows.h>
-////#undef min
-//#include <SFML/Graphics.hpp>
+//
+//#include <filesystem>
+//#include <windows.h>
+//#include <commdlg.h>
+//#include <string>
+//#include <iostream>
+//
+//// Функция для открытия диалогового окна выбора файла
+//std::wstring OpenFileDialog() {
+//    // Структура для хранения параметров диалогового окна
+//    OPENFILENAME ofn;
+//    wchar_t szFile[260] = { 0 };
+//    ZeroMemory(&ofn, sizeof(ofn));
+//    ofn.lStructSize = sizeof(ofn);
+//    ofn.hwndOwner = NULL;  // Если окно имеет владельца, укажите его здесь
+//    ofn.lpstrFile = szFile;
+//    ofn.nMaxFile = sizeof(szFile);
+//    ofn.lpstrFilter = L"All Files\0*.*\0Text Files\0*.TXT\0";
+//    ofn.nFilterIndex = 1;
+//    ofn.lpstrFileTitle = NULL;
+//    ofn.nMaxFileTitle = 0;
+//    ofn.lpstrInitialDir = NULL;
+//    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+//
+//    // Открываем диалоговое окно
+//    if (GetOpenFileName(&ofn) == TRUE) {
+//        return std::wstring(szFile);
+//    }
+//    return L"";
+//}
+//
+//std::string removePath(const std::string& filePath) {
+//    std::string path = filePath;
+//
+//    // Найти начальный индекс для удаления
+//    size_t start_pos = path.find("CustomMapData");
+//    if (start_pos == std::string::npos) {
+//        std::cerr << "Substring 'Warcraft III' not found in the path." << std::endl;
+//        return "";
+//    }
+//
+//    // Передвинем начальный индекс на конец строки "CustomMapData" (с учётом длины и обратного слэша)
+//    start_pos += std::string("CustomMapData").length() + 1;
+//
+//    // Найти конечный индекс для удаления
+//    size_t end_pos = path.find_last_of("\\");
+//    if (end_pos == std::string::npos) {
+//        std::cerr << "Last backslash not found in the path." << std::endl;
+//        return "";
+//    }
+//
+//    // Получить подстроку
+//    return "\\" + path.substr(start_pos, end_pos - start_pos);
+//    // Вывести результат
+//}
 //
 //int main() {
-//    // Создаем окно
-//   sf::RenderWindow window(sf::VideoMode(800, 150), "SFML Application", sf::Style::None);
-//   window.setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width/2 - window.getSize().x / 2, sf::VideoMode::getDesktopMode().height / 2 - window.getSize().y / 2));
+//    std::wstring str = OpenFileDialog();
+//    std::string filePath = { str.begin(), str.end() };
+//    if (!filePath.empty()) {
+//        std::cout << "Selected file: " << filePath << std::endl;
+//    }
+//    else {
+//        std::cout << "No file selected." << std::endl;
+//    }
 //
-//   // Создаем шрифт
-//   sf::Font font;
-//   font.loadFromFile("dataAvLoad\\arialmt.ttf");
 //
-//   sf::Text textTest, textPath;
-//   textTest.setFont(font);
-//   textTest.setString("Specify the path to the save file (you will need only 1 time)");
-//   textTest.setCharacterSize(18);
-//   textTest.setFillColor(sf::Color::White);
-//   textTest.setPosition(40, 20);
+//    filePath = removePath(filePath);
+//    if (filePath.empty())
+//        return 1;
 //
-//   textPath.setFont(font);
-//   textPath.setString("path\\name map\\file.txt");
-//   textPath.setCharacterSize(14);
-//   textPath.setFillColor(sf::Color::White);
-//   textPath.setPosition(80, 48);
+//    std::cout << filePath << std::endl;
 //
-//   // Создаем кнопку для выбора пути
-//   sf::RectangleShape buttonPath(sf::Vector2f(25, 25));
-//   buttonPath.setFillColor(sf::Color(128, 128, 128));
-//   buttonPath.setPosition(40, 50);
 //
-//   // Создаем кнопку для закрытия окна
-//   sf::RectangleShape buttonCancel(sf::Vector2f(100, 30));
-//   buttonCancel.setFillColor(sf::Color(128, 128, 128));
-//   buttonCancel.setPosition(window.getSize().x - 20 - 100, window.getSize().y - 20 - 30);
-//
-//   // Основной цикл обработки событий
-//   while (window.isOpen())
-//   {
-//       sf::Event event;
-//       while (window.pollEvent(event))
-//       {
-//           if (event.type == sf::Event::Closed)
-//           {
-//               window.close();
-//           }
-//           else if (event.type == sf::Event::MouseButtonPressed)
-//           {
-//               if (event.mouseButton.button == sf::Mouse::Left)
-//               {
-//                   // Обработка нажатия на кнопку выбора пути
-//                   if (buttonPath.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y))
-//                   {
-//
-//                   }
-//                   // Обработка нажатия на кнопку закрытия
-//                   else if (buttonCancel.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y))
-//                   {
-//                       window.close();
-//                   }
-//               }
-//           }
-//       }
-//
-//       // Очищаем окно
-//       window.clear();
-//
-//       // Рисуем объекты
-//       window.draw(textTest);
-//       window.draw(textPath);
-//       window.draw(buttonPath);
-//       window.draw(buttonCancel);
-//
-//       // Отображаем окно
-//       window.display();
-//   }
-//   return 0;
+//    std::cin.get();
+//    return 0;
 //}

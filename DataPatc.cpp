@@ -102,7 +102,7 @@ std::vector<DataPatc::listHero> DataPatc::lastFail(const std::string& folder_pat
                         for (const char& c : str) {
                             str2 += std::tolower(c);
                         }
-                        if (str2 == "hero" || str2 == "job" || str2 == "char" || str2 == "Character" || str2 == "перс" || str2 == "??") {
+                        if (str2 == "hero" || str2 == "job" || str2 == "char" || str2 == "Character" || str2 == "перс") {
                             i += 1;
                             if (strVector[i] == "name")
                                 i += 1;

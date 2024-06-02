@@ -1,7 +1,6 @@
 #define WINVER 0x0500
 #include <windows.h>
 #include <vector>
-#include <iostream>
 #include <string>
 #include <iostream>
 #include <filesystem>
@@ -9,52 +8,28 @@
 #include <conio.h>
 #include "key.h"
 
-void key::key1(int c) {
-    INPUT inputs{};
+void key::key1(int keyCode) {
+    INPUT input = {};
+    input.type = INPUT_KEYBOARD;
+    input.ki.wVk = keyCode;
+    SendInput(1, &input, sizeof(INPUT));
 
-    // Pause for 5 seconds.
-
-    // Set up a generic keyboard event.
-    inputs.type = INPUT_KEYBOARD;
-    inputs.ki.wScan = 0; // hardware scan code for key
-    inputs.ki.time = 0;
-    inputs.ki.dwExtraInfo = 0;
-
-
-
-    inputs.ki.wVk = c; // virtual-key code for  key
-    inputs.ki.dwFlags = 0; // 0 for key press
-    SendInput(1, &inputs, sizeof(INPUT));
-
-    // Release  key
-    inputs.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
-    SendInput(1, &inputs, sizeof(INPUT));
+    input.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &input, sizeof(INPUT));
 }
 
-void key::key2(int c, int zajat) {
-    INPUT inputs{};
+void key::key2(int keyCode, int modifier) {
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = modifier;
 
-    // Pause for 5 seconds.
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = keyCode;
 
-    // Set up a generic keyboard event.
-    inputs.type = INPUT_KEYBOARD;
-    inputs.ki.wScan = 0; // hardware scan code for key
-    inputs.ki.time = 0;
-    inputs.ki.dwExtraInfo = 0;
+    SendInput(2, inputs, sizeof(INPUT));
 
-    inputs.ki.wVk = zajat; // virtual-key code for the "Shift" or "ctrl" key
-    inputs.ki.dwFlags = 0; // 0 for key press
-    SendInput(1, &inputs, sizeof(INPUT));
+    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
 
-    inputs.ki.wVk = c; // virtual-key code for the "a" key
-    inputs.ki.dwFlags = 0; // 0 for key press
-    SendInput(1, &inputs, sizeof(INPUT));
-
-    // Release the "A" key
-    inputs.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
-    SendInput(1, &inputs, sizeof(INPUT));
-
-    inputs.ki.wVk = zajat; // virtual-key code for the "Shift" or "ctrl" key
-    inputs.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
-    SendInput(1, &inputs, sizeof(INPUT));
+    SendInput(2, inputs, sizeof(INPUT));
 }

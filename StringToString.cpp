@@ -1,198 +1,112 @@
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 #include <string>
-#include <unordered_map>
-#include <filesystem>
-#include <Windows.h>
-#undef min
+#include <sstream>
 #include <cctype>
-#include <random>
+#include <algorithm>
+#include <unordered_set>
 #include "StringToString.h"
 
-std::string StringToString::removeOnString(const std::string t_str) {
+// Function to normalize and transform specific strings
+std::string StringToString::removeOnString(const std::string& t_str) {
     std::string str;
-    for (const char& c : t_str) {
-        str += std::tolower(c);
-    }
+    std::transform(t_str.begin(), t_str.end(), std::back_inserter(str), ::tolower);
 
     if (str == "zm666") return "zombie666";
-    std::string str2;
-    {
-        str2 = str.substr(0, 3);
-        if (str2 == "eng") return str2;
-    }
-    {
-        str2 = str.substr(0, 5);
-        if (str2 == "30min") return str2;
-    }
-    {
-        str2 = str.substr(0, 6);
-        if (str2 == "disrpg") return str2;
-    }
-    {
-        str2 = str.substr(0, 9);
-        if (str2 == "AnimalRPG") return str2;
-    }
+
+    if (str.substr(0, 3) == "eng") return "eng";
+    if (str.substr(0, 5) == "30min") return "30min";
+    if (str.substr(0, 6) == "disrpg") return "disrpg";
+    if (str.substr(0, 9) == "animalrpg") return "animalrpg";
 
     return str;
 }
 
+// Function to check if a word should be included
 bool StringToString::isIsclu(const std::string& word) {
-    std::string str = "\0";
-    for (const char& c : word) {
-        str += std::tolower(c);
-    }
+    std::string str;
+    std::transform(word.begin(), word.end(), std::back_inserter(str), ::tolower);
 
-    {
-        if (str.size() > 2) {
-            if (str[0] == 'v' && (str[1] >= 48 && str[1] <= 57)) return true;
-        }
-    }
+    if (str.size() > 2 && str[0] == 'v' && std::isdigit(str[1])) return true;
 
-    //list 
-    {
-        if (str == "eng") return true;
-        else if (str == "bug") return true;
-        else if (str == "hotfix") return true;
-        else if (str == "jn") return true;
-        else if (str == "world") return true;
-        else if (str == "worl") return true;
-        else if (str == "raid") return true;
-        else if (str == "rai") return true;
-        else if (str == "final") return true;
-        else if (str == "nal") return true;
-        else if (str == "test") return true;
-        else if (str == "rus") return true;
-        else if (str == "ru") return true;
-        else if (str == "test") return true;
-        else if (str == "translated") return true;
-        else if (str == "ranslated") return true;
-    }
+    static const std::unordered_set<std::string> includedWords = {
+        "eng", "bug", "hotfix", "jn", "world", "worl", "raid", "rai", "final", "nal",
+        "test", "rus", "ru", "translated", "ranslated"
+    };
 
-    {
-        std::string str2 = str.substr(0, 3);
-        if (str2 == "fix") return true;
-    }
-
-    {
-        std::string str2 = str.substr(0, 13);
-        if (str2 == "translatedfix") return true;
-        
-    }
+    if (includedWords.find(str) != includedWords.end()) return true;
+    if (str.substr(0, 3) == "fix") return true;
+    if (str.substr(0, 13) == "translatedfix") return true;
 
     return false;
 }
 
-std::vector<std::string> StringToString::removeString(const std::string& t_fileName)
-{
+// Function to process the filename and extract meaningful parts
+std::vector<std::string> StringToString::removeString(const std::string& t_fileName) {
     std::string fileName = t_fileName;
     std::unordered_map<std::string, int> mapString;
 
-    for (char& c : fileName) {
-        if (c == '_' || c == '-' || c == '(' || c == ')' || c == '[' || c == ']')
-            c = ' ';
+    // Replace specific characters with spaces
+    std::replace_if(fileName.begin(), fileName.end(),
+        [](char c) { return c == '_' || c == '-' || c == '(' || c == ')' || c == '[' || c == ']'; }, ' ');
+
+    // Remove file extension
+    if (fileName.size() > 4 && fileName.substr(fileName.size() - 4) == ".w3x") {
+        fileName.erase(fileName.size() - 4);
     }
 
+    std::stringstream ss(fileName);
+    std::string word;
+    while (ss >> word) {
+        bool isOneNumber = std::any_of(word.begin(), word.end(), ::isdigit);
 
-    const size_t strSize = fileName.size();
-    const std::string pref = fileName.substr(strSize - 4);
-    if (pref == ".w3x") {
-        fileName.replace(strSize - 4, strSize, "");
-    }
-
-    {
-        std::stringstream ss(fileName);
-        std::string word;
-        while (ss >> word) {
-            bool isAllNumber = true;
-            bool isOneNumber = false;
-            for (const char& c : word) {
-                if (c >= 65 && c <= 90 || c >= 97 && c <= 122) {
-                    if (isOneNumber) {
-                        isAllNumber = false;
-                        break;
-                    }
-                    isOneNumber = true;
-                }
-            }
-            if (!isIsclu(word)) {
-                if (!isAllNumber) 
-                {
-                    std::string str2 = removeOnString(word);
-                    if (!isIsclu(str2)) {
-                        std::string strWordToChar = str2;
-                        mapString[strWordToChar]++;
-                    }
-                }
+        if (!isIsclu(word) && !isOneNumber) {
+            std::string str2 = removeOnString(word);
+            if (!isIsclu(str2)) {
+                mapString[str2]++;
             }
         }
     }
 
     std::vector<std::string> strReturn;
-    for (auto& p : mapString) {
-        strReturn.push_back(p.first.c_str());
+    for (const auto& p : mapString) {
+        strReturn.push_back(p.first);
     }
 
     return strReturn;
 }
 
-
-//int levenshteinDistance(const std::string& s1, const std::string& s2) {
-//    const size_t len1 = s1.size(), len2 = s2.size();
-//    std::vector<std::vector<int>> d(len1 + 1, std::vector<int>(len2 + 1));
-//
-//    d[0][0] = 0;
-//    for (size_t i = 1; i <= len1; ++i) d[i][0] = i;
-//    for (size_t i = 1; i <= len2; ++i) d[0][i] = i;
-//
-//    for (size_t i = 1; i <= len1; ++i)
-//        for (size_t j = 1; j <= len2; ++j)
-//            d[i][j] = std::min({ d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (s1[i - 1] == s2[j - 1] ? 0 : 1) });
-//    
-//    return d[len1][len2];
-//}
-//
-//std::vector<std::string> StringToString::removeString(std::string fileName)
-//{
-//    std::vector<std::string> str;
-//
-//    return str;
-//}
-
-bool StringToString::isMap(std::string str1, std::string str2) {
-    std::vector<std::string> substringCounts1 = removeString(str1);
-    std::vector<std::string> substringCounts2 = removeString(str2);
-    if (substringCounts1 == substringCounts2)
-        return true;
-    return false;
+// Function to compare two strings after processing
+bool StringToString::isMap(const std::string& str1, const std::string& str2) {
+    return removeString(str1) == removeString(str2);
 }
 
-bool StringToString::isMapCoutInformtion(std::string str1, std::string str2) {
-    bool ret = false;
+// Function to test the comparison with given test cases
+void StringToString::testStringComparison(const std::vector<std::pair<std::pair<std::string, std::string>, bool>>& testCases) {
+    for (const auto& testCase : testCases) {
+        const auto& strings = testCase.first;
+        bool expected = testCase.second;
 
-    std::vector<std::string> substringCounts1 = removeString(str1);
-    for (auto& p : substringCounts1)
-        std::cout << "str1: ( " << p << " )" << std::endl;
+        std::vector<std::string> substringCounts1 = removeString(strings.first);
+        std::vector<std::string> substringCounts2 = removeString(strings.second);
 
-    std::cout << std::endl;
+        bool result = substringCounts1 == substringCounts2;
 
-    std::vector<std::string> substringCounts2 = removeString(str2);
-    for (auto& p : substringCounts2)
-        std::cout << "str2: ( " << p << " )" << std::endl;
-
-    std::cout << "----------------------------------------------------------------------------------------------\n";
-
-    if (substringCounts1 == substringCounts2) {
-        std::cout << "yes ( " << str1 << " | " << str2 << " )\n";
-        ret = true;
+        std::cout << "Comparing: \"" << strings.first << "\" and \"" << strings.second << "\"\n";
+        std::cout << "Expected: " << std::boolalpha << expected << ", Got: " << result << "\n";
+        if (result == expected) {
+            std::cout << "Test passed.\n";
+        }
+        else {
+            std::cout << "Test failed.\n";
+            for (const auto& p : substringCounts1)
+                std::cout << "str1: ( " << p << " )" << std::endl;
+            std::cout << std::endl;
+            for (const auto& p : substringCounts2)
+                std::cout << "str2: ( " << p << " )" << std::endl;
+        }
+        std::cout << "--------------------------------------------------\n";
+        std::cout << std::endl;
     }
-    else {
-        std::cout << "no ( " << str1 << " | " << str2 << " )\n";
-    }
-
-    std::cout << "----------------------------------------------------------------------------------------------\n";
-    std::cout << "----------------------------------------------------------------------------------------------\n";
-    return ret;
 }
-
-
