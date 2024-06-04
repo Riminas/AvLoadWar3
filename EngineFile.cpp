@@ -14,16 +14,16 @@
 void EngineFile::engineFile1(bool isLastSaveCode)
 {
     getMapOpen getMapOpen_;
-    m_FileName = getMapOpen_.getMapOpen1(m_DataPatc.getMaps());
+    m_FileName = getMapOpen_.getMapOpen1(m_DataPath.getMapsPath());
     if (m_FileName == "Error") return;
 
-    std::string str = m_DataPatc.getSave();
+    std::string str = m_DataPath.getSavePath();
     std::wstring str2(str.begin(), str.end());
     m_DataMaps.NameMaps(m_FileName);
     if(!m_DataMaps.PutSaveCode(str2)) return;
 
     bool isError = false;
-    m_ListHero = m_DataPatc.getFileSaveCode1(m_DataMaps.getPutSaveCode(), isError);
+    m_ListHero = m_DataPath.retrieveHeroData(m_DataMaps.getPutSaveCode(), isError);
     if (isError) return;
 
     for (const auto& p : m_ListHero) {
@@ -51,13 +51,13 @@ void EngineFile::engineTip1(const bool& isLastSaveCode)
         for (const auto& p : m_ListHero) {
             if (p.latestTime > latestTime) {
                 latestTime = p.latestTime;
-                patc = p.patc;
+                patc = p.path;
                 nameChar = p.nameChar;
             }
         }
     }
     else {
-        patc = m_ListHero.front().patc;
+        patc = m_ListHero.front().path;
     }
 
     while (GetAsyncKeyState(VK_MENU) & 0x8000 || GetAsyncKeyState(0x30) & 0x8000) { // 'Alt + 0'
@@ -119,7 +119,7 @@ void EngineFile::engineTip2()
                     std::cout << "Hero:  " << m_ListHero[msg.wParam - 2].nameChar << std::endl;
                     Sleep(100);
                     load load_;
-                    load_.load1(m_ListHero[msg.wParam - 2].patc);
+                    load_.load1(m_ListHero[msg.wParam - 2].path);
                     break;
                 }
             }

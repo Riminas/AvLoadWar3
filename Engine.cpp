@@ -19,7 +19,7 @@ void Engine::engine1()
         isWhileProcessWarcraftIII();
 
         std::cout << getRazelCout();
-        if (!m_DataPatc.loadDataOptions()) return;
+        if (!m_DataPath.initializePaths()) return;
 
         std::cout << getRazelCout();
         std::cout << getStartCout2();
@@ -76,28 +76,32 @@ void Engine::whileMSG() {
             if (msg.wParam == 1 || msg.wParam == 10) {
                 if (clock() - now >= time_delay) {
                     std::cout << getRazelCout();
-                    EngineFile EngineFile_(m_DataPatc);
+                    EngineFile EngineFile_(m_DataPath);
                     EngineFile_.engineFile1(msg.wParam == 1);
                     now = clock();
                 }
             }
             if (msg.wParam == 9) {
+                std::cout << getRazelCout();
 
                 std::string fileName;
                 getMapOpen getMapOpen_;
-                fileName = getMapOpen_.getMapOpen1(m_DataPatc.getMaps());
+                fileName = getMapOpen_.getMapOpen1(m_DataPath.getMapsPath());
                 if (fileName != "Error") {
                     DataMaps dataMaps;
-                    std::string str = m_DataPatc.getSave();
+                    std::string str = m_DataPath.getSavePath();
                     std::wstring str2(str.begin(), str.end());
                     dataMaps.NameMaps(fileName);
 
 
-                    str = m_DataPatc.getSave();
+                    str = m_DataPath.getSavePath();
                     std::wstring wstr = { str.begin(), str.end() };
                     NewPathSaveCode NewPathSaveCode_(wstr, dataMaps.getNameMaps());
                     NewPathSaveCode_.newPathSaveCode();
                 }
+                else {
+                    std::cout << "Error: getMapOpen" << std::endl;
+                };
             }
         }
     }

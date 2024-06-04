@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "DataPatc.h"
+#include "DataPath.h"
 class Engine
 {
 public:
@@ -18,6 +18,6 @@ private:
 	void registerAllHotKey();
 
 	std::string m_nameFile;
-	DataPatc m_DataPatc;
+	DataPath m_DataPath;
 };
 

@@ -14,6 +14,8 @@ bool NewPathSaveCode::newPathSaveCode() {
     if (outFile) {
         outFile << filePath;
         outFile.close();
+        std::cout << "New path SaveCode ( " << m_putDatMapPut + '\\' + m_NameMaps << " )" << std::endl;
+        return true;
     }
     else {
         std::cerr << "Failed to create file: " << m_putDatMapPut << '\\' << m_NameMaps << '\n';
