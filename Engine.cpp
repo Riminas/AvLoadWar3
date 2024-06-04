@@ -3,6 +3,11 @@
 #include <TlHelp32.h>
 #include "Engine.h"
 #include "EngineFile.h"
+#include <shtypes.h>
+#include <ShlObj.h>
+#include "getMapOpen.h"
+#include "DataMaps.h"
+#include "NewPathSaveCode.h"
 
 void Engine::engine1()
 {
@@ -14,7 +19,11 @@ void Engine::engine1()
         isWhileProcessWarcraftIII();
 
         std::cout << getRazelCout();
+        if (!m_DataPatc.loadDataOptions()) return;
+
+        std::cout << getRazelCout();
         std::cout << getStartCout2();
+
 
         whileMSG();
     }
@@ -51,7 +60,7 @@ bool Engine::isProcessWarcraftIII()
 
 void Engine::isWhileProcessWarcraftIII() {
     while (!isProcessWarcraftIII()) {
-        Sleep(500);
+        Sleep(CLOCKS_PER_SEC);
     }
 }
 
@@ -62,13 +71,33 @@ void Engine::whileMSG() {
     MSG msg = { 0 };
     while (GetMessage(&msg, NULL, 0, 0) != 0)
     {
-        if (msg.message == WM_HOTKEY && (msg.wParam == 1 || msg.wParam == 10))
+        if (msg.message == WM_HOTKEY)
         {
-            if (clock() - now >= time_delay) {
-                std::cout << getRazelCout();
-                EngineFile EngineFile_;
-                EngineFile_.engineFile1(msg.wParam == 1);
-                now = clock();
+            if (msg.wParam == 1 || msg.wParam == 10) {
+                if (clock() - now >= time_delay) {
+                    std::cout << getRazelCout();
+                    EngineFile EngineFile_(m_DataPatc);
+                    EngineFile_.engineFile1(msg.wParam == 1);
+                    now = clock();
+                }
+            }
+            if (msg.wParam == 9) {
+
+                std::string fileName;
+                getMapOpen getMapOpen_;
+                fileName = getMapOpen_.getMapOpen1(m_DataPatc.getMaps());
+                if (fileName != "Error") {
+                    DataMaps dataMaps;
+                    std::string str = m_DataPatc.getSave();
+                    std::wstring str2(str.begin(), str.end());
+                    dataMaps.NameMaps(fileName);
+
+
+                    str = m_DataPatc.getSave();
+                    std::wstring wstr = { str.begin(), str.end() };
+                    NewPathSaveCode NewPathSaveCode_(wstr, dataMaps.getNameMaps());
+                    NewPathSaveCode_.newPathSaveCode();
+                }
             }
         }
     }
@@ -81,6 +110,12 @@ void Engine::registerAllHotKey()
     }
 }
 
+LPITEMIDLIST GetPIDLFromPath(const std::wstring& path) {
+    LPITEMIDLIST pidl = nullptr;
+    HRESULT hr = SHParseDisplayName(path.c_str(), nullptr, &pidl, 0, nullptr);
+    return SUCCEEDED(hr) ? pidl : nullptr;
+}
+
 std::string Engine::getStartCout() { return "\tThe game is expected to launch\nhttps://github.com/Riminas/AvLoadWar3.git\n\n"; }
-std::string Engine::getStartCout2() { return "\tTo download the last save, press the key combination ' alt + 0 '\n\tLoading the list of heroes ' alt + 9 '\n"; }
+std::string Engine::getStartCout2() { return "\tTo download the last save, press the key combination ' alt + 0 '\n\tLoading the list of heroes ' alt + 9 '\n\tRemove path code ' alt + 8 '\n"; }
 std::string Engine::getRazelCout() { return "___________________________________________________________________________________\n"; }

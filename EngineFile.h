@@ -4,6 +4,7 @@
 class EngineFile
 {
 public:
+	EngineFile(DataPatc& t_DataPatc) : m_DataPatc(t_DataPatc) {};
 	void engineFile1(bool isLastSaveCode);
 private:
 	void engineTip1(const bool& isLastSaveCode);
@@ -15,7 +16,7 @@ private:
 	std::vector<DataPatc::listHero> m_ListHero;
 	std::string m_FileName = "\0";
 	std::string m_PatcFile = "\0";
-	DataPatc m_DataPatc;
+	DataPatc& m_DataPatc;
 	DataMaps m_DataMaps;
 };
 

@@ -12,6 +12,8 @@ public:
 private:
 	void checkFile(const std::filesystem::path& filePath, std::string& nameFile);
 
+	bool containsOnlyEnglishCharacters(const std::string& text);
+
 	std::mutex m_Mtx;
 	std::string m_nameFile;
 };

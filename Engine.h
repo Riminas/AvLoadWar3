@@ -1,13 +1,12 @@
 #pragma once
 #include <string>
+#include "DataPatc.h"
 class Engine
 {
 public:
 	void engine1();
 
 private:
-	std::string lastFail(const std::string& t_str);
-	bool isValibleIdKod();
 	void isWhileProcessWarcraftIII();
 	bool isProcessWarcraftIII();
 	
@@ -19,5 +18,6 @@ private:
 	void registerAllHotKey();
 
 	std::string m_nameFile;
+	DataPatc m_DataPatc;
 };
 

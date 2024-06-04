@@ -3,28 +3,23 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <windows.h>
-#include <commdlg.h>
 #include <string>
-#include <shlobj.h>
+#include <algorithm>
 
 #include "StringToString.h"
+#include "NewPathSaveCode.h"
 #include "DataMaps.h"
 
 namespace fs = std::filesystem;
 
-bool DataMaps::loadDataMaps(const std::string& fileName, const std::wstring& path) {
-    NameMaps(fileName);
-    return PutSaveCode(path);
-}
-
 void DataMaps::NameMaps(const std::string& fileName) {
-    StringToString StringToString_;
-    auto nameFileRemove = StringToString_.removeString(fileName);
+    StringToString stringToString;
+    auto nameFileRemove = stringToString.removeString(fileName);
 
     m_NameMaps = nameFileRemove[0];
-    for (const auto& p : nameFileRemove | std::views::drop(1))
-        m_NameMaps += '_' + p;
+    for (const auto& part : nameFileRemove | std::views::drop(1)) {
+        m_NameMaps += '_' + part;
+    }
     m_NameMaps += ".txt";
 }
 
@@ -34,21 +29,16 @@ bool DataMaps::PutSaveCode(const std::wstring& path) {
         return true;
     }
 
-    std::cout << "Error: Not information file (" << m_putDatMapPut << "\\" << m_NameMaps << ")\n";
+    if (PathDirectorySaveCode(path)) {
+        std::cout << "Loads: " << m_PutSaveCode << std::endl;
+        return true;
+    }
+
+    std::cout << "Error: No information file (" << m_putDatMapPut << "\\" << m_NameMaps << ")\n";
     std::cout << "Create file (" << m_NameMaps << ") and save code directory\n";
 
-    auto folderPath = BrowseFolderDialog(path);
-    std::string filePath(folderPath.begin(), folderPath.end());
-    if (filePath.empty() || (filePath = removePath(filePath)).empty())
-        return false;
-
-    std::ofstream outFile(m_putDatMapPut + '\\' + m_NameMaps);
-    if (outFile) {
-        outFile << filePath;
-        outFile.close();
-    }
-    else {
-        std::cerr << "Failed to create file: " << m_putDatMapPut << '\\' << m_NameMaps << '\n';
+    NewPathSaveCode newPathSaveCode(path, m_NameMaps);
+    if (!newPathSaveCode.newPathSaveCode()) {
         return false;
     }
 
@@ -57,68 +47,59 @@ bool DataMaps::PutSaveCode(const std::wstring& path) {
         return true;
     }
 
-    std::cout << "Error: Not information file (" << m_putDatMapPut << "\\" << m_NameMaps << ")\n";
+    std::cout << "Error: No information file (" << m_putDatMapPut << "\\" << m_NameMaps << ")\n";
     return false;
 }
 
 bool DataMaps::loadDatFail() {
     std::ifstream inFile(m_putDatMapPut + '\\' + m_NameMaps);
-    if (!inFile.is_open())
+    if (!inFile.is_open()) {
         return false;
+    }
 
     std::getline(inFile, m_PutSaveCode);
     return true;
 }
 
-LPITEMIDLIST GetPIDLFromPath(const std::wstring& path) {
-    LPITEMIDLIST pidl = nullptr;
-    HRESULT hr = SHParseDisplayName(path.c_str(), nullptr, &pidl, 0, nullptr);
-    return SUCCEEDED(hr) ? pidl : nullptr;
-}
-
-std::wstring DataMaps::BrowseFolderDialog(const std::wstring& initialPath) {
-    LPITEMIDLIST pidlRoot = GetPIDLFromPath(initialPath);
-
-    BROWSEINFO bi = { 0 };
-    bi.lpszTitle = L"Specify the directory where the save files are stored";
-    bi.pidlRoot = pidlRoot;
-    bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-
-    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-    std::wstring result;
-
-    if (pidl) {
-        wchar_t path[MAX_PATH];
-        if (SHGetPathFromIDList(pidl, path)) {
-            result = path;
-        }
-
-        IMalloc* imalloc = nullptr;
-        if (SUCCEEDED(SHGetMalloc(&imalloc))) {
-            imalloc->Free(pidl);
-            imalloc->Release();
-        }
-    }
-    return result;
-}
-
 std::string DataMaps::removePath(const std::string& filePath) {
-    std::string path = filePath;
-    const std::string marker = "CustomMapData";
-    size_t start_pos = path.find(marker);
+    size_t start_pos = filePath.find("CustomMapData");
     if (start_pos == std::string::npos) {
-        std::cerr << "Substring 'CustomMapData' not found in the path.\n";
+        std::cerr << "Substring 'CustomMapData' not found in the path." << std::endl;
         return "";
     }
-    start_pos += marker.length() + 1;
+    start_pos += std::string("CustomMapData").length() + 1;
 
-    size_t end_pos = path.find_last_of("\\");
+    size_t end_pos = filePath.find_last_of("\\");
     if (end_pos == std::string::npos) {
-        std::cerr << "Last backslash not found in the path.\n";
+        std::cerr << "Last backslash not found in the path." << std::endl;
         return "";
     }
 
-    return "\\" + path.substr(start_pos, end_pos - start_pos);
+    return "\\" + filePath.substr(start_pos, end_pos - start_pos);
+}
+
+bool DataMaps::PathDirectorySaveCode(const std::wstring& path) {
+    std::string substr = m_NameMaps;
+    if (substr.size() > 4 && substr.substr(substr.size() - 4) == ".txt") {
+        substr.erase(substr.size() - 4);
+    }
+
+    for (const auto& entry : fs::recursive_directory_iterator(path)) {
+        if (fs::is_directory(entry.path())) {
+            std::string result("\0");
+            std::string str = entry.path().filename().string();
+            std::transform(str.begin(), str.end(), std::back_inserter(result), [](char c) {
+                return std::tolower(c);
+                });
+
+
+            if (result == substr) {
+                m_PutSaveCode = removePath(entry.path().string());
+                return !m_PutSaveCode.empty();
+            }
+        }
+    }
+    return false;
 }
 
 std::string DataMaps::getPutSaveCode() const { return m_PutSaveCode; }

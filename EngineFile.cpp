@@ -9,17 +9,18 @@
 #include "getMapOpen.h"
 #include "EngineFile.h"
 #include "load.h"
+#include "NewPathSaveCode.h"
 
 void EngineFile::engineFile1(bool isLastSaveCode)
 {
-    if (!m_DataPatc.loadDataOptions()) return;
-
     getMapOpen getMapOpen_;
     m_FileName = getMapOpen_.getMapOpen1(m_DataPatc.getMaps());
     if (m_FileName == "Error") return;
 
-    std::wstring str2(m_DataPatc.getSave().begin(), m_DataPatc.getSave().end());
-    if (!m_DataMaps.loadDataMaps(m_FileName, str2)) return;
+    std::string str = m_DataPatc.getSave();
+    std::wstring str2(str.begin(), str.end());
+    m_DataMaps.NameMaps(m_FileName);
+    if(!m_DataMaps.PutSaveCode(str2)) return;
 
     bool isError = false;
     m_ListHero = m_DataPatc.getFileSaveCode1(m_DataMaps.getPutSaveCode(), isError);
