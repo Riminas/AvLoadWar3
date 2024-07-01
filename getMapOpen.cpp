@@ -2,23 +2,35 @@
 #include "getMapOpen.h"
 #include <regex>
 
-std::string getMapOpen::getMapOpen1(const std::string& folder_path) 
+std::wstring getMapOpen::getMapOpen1(const std::wstring& folder_path) 
 {
     if (std::filesystem::is_directory(folder_path.c_str())) {
 
-        std::vector<std::thread> threads;
+        //std::vector<std::thread> threads;
+        //for (const auto& entry : std::filesystem::recursive_directory_iterator(folder_path)) {
+        //    if (std::filesystem::is_directory(entry.path())) {
+        //        continue; // Пропускаем директории, если это необходимо
+        //    }
+        //    threads.emplace_back([&](const std::filesystem::path& path) {
+        //        checkFile(path, m_nameFile);
+        //        }, entry.path());
+        //}
+
+        //for (auto& t : threads) {
+        //    t.join();
+        //}
+
+
         for (const auto& entry : std::filesystem::recursive_directory_iterator(folder_path)) {
             if (std::filesystem::is_directory(entry.path())) {
                 continue; // Пропускаем директории, если это необходимо
             }
-            threads.emplace_back([&](const std::filesystem::path& path) {
-                checkFile(path, m_nameFile);
-                }, entry.path());
+            const std::filesystem::path path = entry.path();
+            if (checkFile(path, m_nameFile))
+                break;
         }
 
-        for (auto& t : threads) {
-            t.join();
-        }
+
         if (!m_nameFile.empty()) {
             std::ifstream fil(m_nameFile);
             std::string str;
@@ -45,12 +57,12 @@ std::string getMapOpen::getMapOpen1(const std::string& folder_path)
                 }
             }
 
-            if (containsOnlyEnglishCharacters(str)) {
-                return str;
+            if (containsOnlyEnglishCharacters(str) && str != "Just another Warcraft III map") {
+                return { str.begin(), str.end() };
             }
             else {
                 std::filesystem::path path = m_nameFile;
-                return path.filename().string();
+                return path.filename().wstring();
             }
 
         }
@@ -59,20 +71,21 @@ std::string getMapOpen::getMapOpen1(const std::string& folder_path)
         }
     }
     else {
-        std::cout << "Error: Put(not \"Maps\" directory) - ( " << folder_path << " )" << std::endl;
+        std::wcout << "Error: Put(not \"Maps\" directory) - ( " << folder_path << " )" << std::endl;
     }
-    return "Error";
+    return L"Error";
 }
 
-void getMapOpen::checkFile(const std::filesystem::path& filePath, std::string& nameFile) {
+bool getMapOpen::checkFile(const std::filesystem::path& filePath, std::string& nameFile) {
     std::fstream file;
     file.open(filePath);
     if (!file.is_open()) {
-        std::lock_guard<std::mutex> lock(m_Mtx);
-        std::filesystem::path p(filePath);
-        nameFile = p.string();
+        ////std::lock_guard<std::mutex> lock(m_Mtx);
+        nameFile = filePath.string();
+        return true;
     }
     file.close();
+    return false;
 }
 
 bool getMapOpen::containsOnlyEnglishCharacters(const std::string& text) {

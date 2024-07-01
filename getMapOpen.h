@@ -8,9 +8,9 @@
 class getMapOpen
 {
 public:
-	std::string getMapOpen1(const std::string& folder_path);
+	std::wstring getMapOpen1(const std::wstring& folder_path);
 private:
-	void checkFile(const std::filesystem::path& filePath, std::string& nameFile);
+	bool checkFile(const std::filesystem::path& filePath, std::string& nameFile);
 
 	bool containsOnlyEnglishCharacters(const std::string& text);
 
