@@ -1,0 +1,30 @@
+[Return] -suicide
+[isVisibleButtonReturn] true
+[isLoadReturn] false
+[Save] -save
+[isVisibleButtonSave] true
+[isLoadSave] false
+[Craft] -create
+[isVisibleButtonCraft] true
+[isLoadCraft] false
+[Cam] -cam 150
+[isVisibleButtonCam] true
+[isLoadCam] true
+[Stats] -stats
+[isVisibleButtonStats] false
+[isLoadStats] false
+[Clear] -clear
+[isVisibleButtonClear] false
+[isLoadClear] false
+[Clean] -clean
+[isVisibleButtonClean] false
+[isLoadClean] false
+[Str] -str 10
+[isVisibleButtonStr] false
+[isLoadStr] false
+[Agi] -agi 10
+[isVisibleButtonAgi] false
+[isLoadAgi] false
+[Int] -int 10
+[isVisibleButtonInt] false
+[isLoadInt] false
