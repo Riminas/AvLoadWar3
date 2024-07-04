@@ -21,11 +21,11 @@ struct DirectoryEntry {
 class NewDirectory {
 public:
     NewDirectory(sf::RenderWindow& t_Window, sf::Font& font, const sf::Vector2f& newPosition, bool& t_isExetTree, DataAll& t_DataAll);
-    bool newDirectory();
+    int newDirectory();
 
 private:
-    void initializeText(sf::Text& text, const std::wstring& textString = L"", const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color::Black) const;
-    void initializeRectangle(sf::RectangleShape& rectangle, const sf::Vector2f& size = { 10, 10 }, const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color(240, 240, 240)) const;
+    void initializeText(sf::Text& text, const std::wstring& textString = L"", const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color::Black, const float& letterSpacing = 1.0f) const;
+    void initializeRectangle(sf::RectangleShape& rectangle, const sf::Vector2f& size = { 10, 10 }, const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color::White) const;
     std::wstring run();
     void initializeWindow();
     void initializeLine(sf::RectangleShape& line, const sf::Vector2f& size, const sf::Vector2f& position);

@@ -44,9 +44,6 @@ short EngineFileTip2::initialize() {
 }
 
 bool EngineFileTip2::engineFile() {
-    NewDataAll NewDataAll_(m_DataAll, m_Window, font);
-    NewDataAll_.newMaps(true);
-
     bool isError = false;
     m_ListHero = m_DataAll.m_DataPath.retrieveHeroData(m_DataAll.m_DataMaps.getPutSaveCode(), isError);
     if (isError) return false;
@@ -123,7 +120,7 @@ std::wstring EngineFileTip2::getPathListHero(const int& i) {
 void EngineFileTip2::createHeroDraw(int index, unsigned int characterSize) {
     bool isLastElement = (index == m_ListHero.size());
     m_ListHeroDraw[index].shape.setSize(sf::Vector2f(400, 23));
-    m_ListHeroDraw[index].shape.setFillColor(sf::Color(220, 220, 220));
+    m_ListHeroDraw[index].shape.setFillColor(sf::Color::White);
     m_ListHeroDraw[index].shape.setOutlineColor(sf::Color::Black);
     m_ListHeroDraw[index].shape.setOutlineThickness(2);
 

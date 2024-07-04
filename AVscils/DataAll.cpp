@@ -15,25 +15,52 @@ void NewDataAll::newMaps(const bool& isNoCommands, const bool& isOptions)
 {
 	getMapOpen getMapOpen_;
 	const std::wstring newNameMaps = getMapOpen_.getMapOpen1(m_DataAll.m_DataPath.getMapsPath());
-    if (newNameMaps == L"Error") { m_DataAll.isNewMaps = false; return; }
+    if (newNameMaps == L"Error") { 
+        m_DataAll.isNewMaps = false;
+        return; 
+    }
 
+    bool isNewMaps = true;
 	if (isOptions || m_DataAll.m_DataMaps.getNameMaps() != newNameMaps) {
         m_DataAll.m_DataMaps.NameMaps(newNameMaps);
         int num = m_DataAll.m_DataMaps.PutSaveCode(m_DataAll.m_DataPath.getSavePath());
-        if (isNoCommands || isOptions || num == 0) {
+        if (isOptions || num == 0 || (isNoCommands && num == 2)) {
+
             sf::Vector2f newPosition(0, 0);
             bool faic = false;
             NewDirectory app(m_Window, m_Font, newPosition, faic, m_DataAll);
-            app.newDirectory();
+
+            const int num2 = app.newDirectory();
+            if (num2 == 3) {
+                m_DataAll.m_DataMaps.m_PutSaveCode = L"False";
+                isNewMaps = false;
+            }
+            else if (num2 == 2) {
+            }
+            else if (num2 == 1) {
+                if (m_DataAll.m_DataMaps.m_PutSaveCode == L"False")
+                    m_DataAll.m_DataMaps.m_PutSaveCode = L"\0";
+            }
+            else if (num2 == 0) {
+                m_DataAll.m_DataMaps.m_PutSaveCode = L"False";
+                isNewMaps = false;
+            }
+            if (m_DataAll.m_DataMaps.m_LastPathSaveCode != m_DataAll.m_DataMaps.m_PutSaveCode) {
+                m_DataAll.m_DataMaps.m_LastPathSaveCode = m_DataAll.m_DataMaps.m_PutSaveCode;
+                m_DataAll.m_DataMaps.m_IsNewInfo = true;
+            }
+            else {
+                isNewMaps = false;
+            }
         }
         else if (isNoCommands == false && num == 2) {
-
+            m_DataAll.m_DataMaps.m_IsNewInfo = true;
         }
 
         LoadCommands LoadCommands_(m_DataAll);
         LoadCommands_.loadCommands();
 
-        m_DataAll.isNewMaps = true;
+        m_DataAll.isNewMaps = isNewMaps;
 	}
 
 	

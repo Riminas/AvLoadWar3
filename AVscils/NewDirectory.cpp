@@ -31,9 +31,10 @@ NewDirectory::NewDirectory(sf::RenderWindow& t_Window, sf::Font& t_font, const s
     initializeWindow();
 }
 
-inline void NewDirectory::initializeText(sf::Text& text, const std::wstring& textString, const sf::Vector2f& position, const sf::Color& color) const {
+inline void NewDirectory::initializeText(sf::Text& text, const std::wstring& textString, const sf::Vector2f& position, const sf::Color& color, const float& letterSpacing) const {
     text.setFont(font);
     text.setCharacterSize(16);
+    text.setLetterSpacing(letterSpacing);;
 
     text.setString(textString);
     text.setPosition(position);
@@ -79,7 +80,7 @@ void NewDirectory::initializeWindow() {
         const auto& [name, components] = nameRazels[i];
         auto& [button, text] = components;
         initializeRectangle(button, sf::Vector2f(windowWidth / maxSize, 30), newPosition + sf::Vector2f(windowWidth / maxSize * i, 25));
-        initializeText(text, name, button.getPosition() + sf::Vector2f{ 20, 5 });
+        initializeText(text, name, button.getPosition() + sf::Vector2f{ 20, 5 }, sf::Color::Black, 1.5f);
     }
 
     activeMenu();
@@ -116,35 +117,34 @@ void NewDirectory::initializeScrollbar(const float& windowWidth, const float& wi
     scrollbarThumb.setPosition(scrollbar.getPosition());
 
     backgroundDirectory.setFillColor(sf::Color(0, 60, 160, 80));
-    backgroundDirectory.setSize(sf::Vector2f(windowWidth - 15, 25));
+    backgroundDirectory.setSize(sf::Vector2f(windowWidth, 30));
 
     rootDirectory.isOpen = true;
 }
 
 
 void NewDirectory::initializeCommands() {
-    std::vector<std::pair<std::string, sf::Vector2f>> commandConfigs = {
-        {"[Return]", {25, 80}},
-        {"[Save]", {25, 105}},
-        {"[Craft]", {25, 130}},
-        {"[Cam]", {25, 155}},
-        {"[Stats]", {25, 180}},
-        {"[Clear]", {25, 205}},
-        {"[Clean]", {25, 230}},
-        {"[Str]", {25, 255}},
-        {"[Agi]", {25, 280}},
-        {"[Int]", {25, 305}},
+    const float OFFSET_X = 25;
+    const float INITIAL_Y = 80;
+
+    std::vector<std::string> commandNames = {
+        "[Return]", "[Save]", "[Craft]", "[Cam]", "[Stats]", "[Clear]", "[Clean]", "[Str]", "[Agi]", "[Int]"
     };
 
-    m_CommandsData.resize(commandConfigs.size());
-    for (size_t i = 0; i < commandConfigs.size(); ++i) {
-        auto& [commandName, positionOffset] = commandConfigs[i];
+    m_CommandsData.resize(commandNames.size());
+
+    const sf::Color buttonColor(180, 180, 180);
+    const sf::Color buttonTextColor = sf::Color::Black;
+
+    for (size_t i = 0; i < commandNames.size(); ++i) {
+        const std::string& commandName = commandNames[i];
         auto& command = *m_DataAll.m_Commands.commandMap[commandName];
-        if(commandName == "[Cam]")
-            m_CommandsData[i].initialize(command.isVisibleButton, command.isLoad, font, command.str, 20, sf::Color(180, 180, 180), sf::Color::Black, true);
-        else
-            m_CommandsData[i].initialize(command.isVisibleButton, command.isLoad, font, command.str, 20, sf::Color(180, 180, 180), sf::Color::Black, false);
-        m_CommandsData[i].setPosition(newPosition.x, newPosition.y + positionOffset.y, background.getSize().x, positionOffset.x);
+
+        const bool isCamCommand = (commandName == "[Cam]");
+        m_CommandsData[i].initialize(command.isVisibleButton, command.isLoad, font, command.str, 18, buttonColor, buttonTextColor, isCamCommand);
+
+        float positionY = INITIAL_Y + (i * OFFSET_X);
+        m_CommandsData[i].setPosition(newPosition.x, newPosition.y + positionY, background.getSize().x, OFFSET_X);
     }
 
     m_TextArray.resize(3);
@@ -165,7 +165,7 @@ void NewDirectory::initializeSettings() {
 
     for (size_t i = 0; i < settings.size(); ++i) {
         const auto& [label, positionOffset] = settings[i];
-        m_RowData[i].initialize(m_DataAll.m_OptionsData.autoСlickerKey, font, label, 24, sf::Color(180, 180, 180), sf::Color::Black);
+        m_RowData[i].initialize(m_DataAll.m_OptionsData.autoСlickerKey, font, label, 18, sf::Color(180, 180, 180), sf::Color::Black);
         m_RowData[i].setPosition(newPosition.x + positionOffset.x, newPosition.y + positionOffset.y);
     }
 }
@@ -267,7 +267,7 @@ void NewDirectory::updateDirectoryTexts() {
     std::function<void(const DirectoryEntry&, float)> addTexts = [&](const DirectoryEntry& dir, float indent) {
         if (dir.isOpen) {
             for (const auto& subDir : dir.subDirectories) {
-                    sf::Text dirText(subDir.name, font, 16);
+                    sf::Text dirText(subDir.name, font, 14);
                     dirText.setFillColor(sf::Color::Black);
                     dirText.setPosition(sf::Vector2f(38 + indent * 20, yOffset) + newPosition); // Смещение текста для размещения треугольника
                     directoryTexts.push_back(dirText);
@@ -289,7 +289,7 @@ void NewDirectory::updateDirectoryTexts() {
                     }
 
                     if (isBackgroundDirectory == false && subDir.fullPath == openDirectoryEntry.fullPath && (yOffset + newPosition.y >= 60 && yOffset <= background.getSize().y - 60 + newPosition.y)) {
-                        backgroundDirectory.setPosition(sf::Vector2f(0, yOffset) + newPosition);
+                        backgroundDirectory.setPosition(sf::Vector2f(0, yOffset-4) + newPosition);
                         isBackgroundDirectory = true;
                     }
 
@@ -318,7 +318,7 @@ void NewDirectory::adjustScrollbar() {
     scrollbarThumb.setPosition(sf::Vector2f(scrollbar.getPosition().x, scrollbar.getPosition().y + thumbPosition));
 }
 
-bool NewDirectory::newDirectory() {
+int NewDirectory::newDirectory() {
     std::filesystem::create_directory(pathDatMapPut);
 
     // Открытие диалогового окна для выбора папки и получение пути к выбранной папке
@@ -326,8 +326,10 @@ bool NewDirectory::newDirectory() {
 
     // Проверка, пуст ли путь
     if (folderPath == L"Exet") {
+        if(m_DataAll.m_DataMaps.m_PutSaveCode.empty())
+            m_DataAll.m_DataMaps.m_PutSaveCode = L"Exet";
         std::wcerr << "folderPath1.empty()" << std::endl;
-        return false;
+        return 2;
     }
 
     // Удаление подстроки "C:\\Users\\Aio\\Documents\\Warcraft III\\CustomMapData" из пути
@@ -339,7 +341,7 @@ bool NewDirectory::newDirectory() {
     // Проверка, пуст ли оставшийся путь
     if (folderPath.empty()) {
         std::wcerr << "folderPath2.empty()" << std::endl;
-        return false;
+        return 0;
     }
 
     // Создание полного пути
@@ -360,14 +362,17 @@ bool NewDirectory::newDirectory() {
 
         outFile.close();
         std::wcout << "New path SaveCode ( " << pathDatMapPut + L'\\' + nameMaps << pathFile << L" )" << std::endl;
-        return true; // Успешное выполнение
+        if (utf8Text == "False")
+            return 3;
+        m_DataAll.m_DataMaps.m_PutSaveCode = folderPath;
+        return 1; // Успешное выполнение
     }
     else {
         // Ошибка при создании файла
         std::wcerr << "Failed to create file: " << pathDatMapPut << L'\\' << nameMaps << pathFile << L'\n';
-        return false;
+        return 0;
     }
-    return false;
+    return 0;
 }
 
 void NewDirectory::drawWindow() {

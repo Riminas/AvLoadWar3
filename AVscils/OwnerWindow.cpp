@@ -62,8 +62,6 @@ void OwnerWindow::processingButton(const sf::Vector2i& event, bool isWindow2Visi
         m_IsVisibleMenu = !m_IsVisibleMenu;
     }
     else if (numButton == 0 || numButton >= 2) {
-        NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
-        NewDataAll_.newMaps();
         if (m_DataAll.m_Commands.returnCmd.str != "False") {
             std::string str = "\0";
             switch (numButton)
@@ -124,11 +122,28 @@ void OwnerWindow::processingButtonMenu(const sf::Vector2i& event, bool isWindow2
 
     const int numButton = mouseButtonMenuPressed(event, isWindow2Visible);
     
-    if (numButton == -1) {
+    if (numButton == -2)
+        return;
+    else if (numButton == -1) {
         m_Window.close();
         return;
     }
-    else if (numButton == 0) {
+
+    if (!m_DataAll.isNewMaps && numButton != 2) {
+        NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
+        NewDataAll_.newMaps(true);
+
+        m_Window.clear(sf::Color(0, 255, 0));
+
+        m_Window.display();
+
+        updateButtonsVisible();
+
+        if (!m_DataAll.isNewMaps)
+            return;
+    }
+
+    if (numButton == 0) {
         if (isWindow2Visible[0]) {
             isWindow2Visible[0] = false;
         }
@@ -152,7 +167,6 @@ void OwnerWindow::processingButtonMenu(const sf::Vector2i& event, bool isWindow2
         isWindow2Visible[0] = !isWindow2Visible[0];
     }
     else if (numButton == 2) {
-
         NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
         NewDataAll_.newMaps(true, true);
 
@@ -162,7 +176,7 @@ void OwnerWindow::processingButtonMenu(const sf::Vector2i& event, bool isWindow2
 
         m_Window.display();
 
-        initializeButtonsCommands();
+        updateButtonsVisible();
     }
 }
 
@@ -186,6 +200,34 @@ int OwnerWindow::mouseButtonMenuPressed(const sf::Vector2i& event, bool isWindow
     }
 
     return -2;
+}
+
+bool OwnerWindow::isVisibleButton(const int& num) {
+    switch (num)
+    {
+    case 0: return m_DataAll.m_Commands.returnCmd.isVisibleButton;
+    case 2: return m_DataAll.m_Commands.saveCmd.isVisibleButton;
+    case 3: return m_DataAll.m_Commands.craftCmd.isVisibleButton;
+    case 4: return m_DataAll.m_Commands.camCmd.isVisibleButton;
+    case 5: return m_DataAll.m_Commands.statsCmd.isVisibleButton;
+    case 6: return m_DataAll.m_Commands.clearCmd.isVisibleButton;
+    case 7: return m_DataAll.m_Commands.cleanCmd.isVisibleButton;
+    case 8: return m_DataAll.m_Commands.strCmd.isVisibleButton;
+    case 9: return m_DataAll.m_Commands.agiCmd.isVisibleButton;
+    case 10: return m_DataAll.m_Commands.intCmd.isVisibleButton;
+    default: return false;
+    }
+}
+
+void OwnerWindow::updateButtonsVisible() {
+    const int maxButton = static_cast<int>(m_Buttons.size());
+    for (int i = 0; i < maxButton; ++i) {
+
+        if (i != 1)
+            m_Buttons[i].isVisibleButton = isVisibleButton(i);
+        else
+            m_Buttons[i].isVisibleButton = true;
+    }
 }
 
 void OwnerWindow::initializeButtonsCommands() {
@@ -213,63 +255,14 @@ void OwnerWindow::initializeButtonsCommands() {
 
     //const std::vector<std::string> buttonTextures = {  };
 
-    int enumButton = 0;
     int minus = 0;
     m_Buttons.resize(buttonTextures.size());
     const int maxButton = static_cast<int>(m_Buttons.size());
     for (int i = 0; i < maxButton; ++i) {
         m_Buttons[i].shape.setSize(sf::Vector2f(static_cast<float>(m_ConstSize.x - 1), static_cast<float>(m_ConstSize.x - 1)));
 
-        bool isVisibleButton = true;
-        switch (i)
-        {
-        case 0:
-            isVisibleButton = m_DataAll.m_Commands.returnCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 2:
-            isVisibleButton = m_DataAll.m_Commands.saveCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 3:
-            isVisibleButton = m_DataAll.m_Commands.craftCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 4:
-            isVisibleButton = m_DataAll.m_Commands.camCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 5:
-            isVisibleButton = m_DataAll.m_Commands.statsCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 6:
-            isVisibleButton = m_DataAll.m_Commands.clearCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 7:
-            isVisibleButton = m_DataAll.m_Commands.cleanCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 8:
-            isVisibleButton = m_DataAll.m_Commands.strCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 9:
-            isVisibleButton = m_DataAll.m_Commands.agiCmd.isVisibleButton;
-            enumButton++;
-            break;
-        case 10:
-            isVisibleButton = m_DataAll.m_Commands.intCmd.isVisibleButton;
-            enumButton++;
-            break;
-        default:
-            break;
-        }
-
-        //if (!isVisibleButton)
         if (i != 1)
-            m_Buttons[i].isVisibleButton = isVisibleButton;
+            m_Buttons[i].isVisibleButton = isVisibleButton(i);
         else
             m_Buttons[i].isVisibleButton = true;
 
@@ -282,18 +275,7 @@ void OwnerWindow::initializeButtonsCommands() {
         if (!m_Buttons[i].texture.loadFromFile(buttonTextures[i])) {
             m_Buttons[i].isLoadTextur = false;
 
-            const std::vector<std::string> buttonTextures = {
-                "men",
-                "ret",
-                "sav",
-                "cra",
-                "cam",
-                "sta",
-                "clr",
-                "cln",
-                "str",
-                "agi",
-                "int" };
+            const std::vector<std::string> buttonTextures = { "men", "ret", "sav", "cra", "cam", "sta", "clr", "cln", "str", "agi", "int" };
 
             m_Buttons[i].text.setFont(m_Font);
             m_Buttons[i].text.setFillColor(sf::Color::Black);
@@ -365,7 +347,7 @@ void setAlwaysOnTop(HWND hwnd) {
 void OwnerWindow::setupWindow() {
     const unsigned xW = sf::VideoMode::getDesktopMode().width - 2;
     const unsigned yW = sf::VideoMode::getDesktopMode().height - 2;
-    m_Window.create(sf::VideoMode(xW, yW), "AVLoad", sf::Style::None);
+    m_Window.create(sf::VideoMode(xW, yW), "AvLoads", sf::Style::None);
 
     {
         HWND hwnd = m_Window.getSystemHandle();
@@ -405,6 +387,11 @@ void OwnerWindow::activeGameTrue(const HWND& hWndWindow) {
     if (GetClientRect(hWndWindow, &rect)) {
         const int width = rect.right - rect.left;
         const int height = rect.bottom - rect.top;
+        if (height < 300 || width < 300) {
+            m_DataAll.isNewWarcrft = false;
+            m_IsVisibleOwnerWindow = false;
+            return;
+        }
         const float x = width/2 - (m_Buttons.size()*m_ConstSize.x)/3+100;
         const float y = (height / 20.0f) * 15.75f - 10;
 

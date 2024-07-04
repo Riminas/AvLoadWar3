@@ -17,6 +17,7 @@ public:
 
     bool isNewMaps = false;
     bool isNewWarcrft = false;
+    bool isVisibleWindow = true;
 private:
 };
 

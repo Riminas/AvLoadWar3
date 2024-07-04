@@ -13,7 +13,7 @@ int main()
     std::locale::global(std::locale("Russian"));
     std::wcout.imbue(std::locale());
 
-    HWND hWndWindow = FindWindow(NULL, L"AVLoad");
+    HWND hWndWindow = FindWindow(NULL, L"AvLoads");
     if (hWndWindow == NULL) {
         Engine Engine_;
         Engine_.engine1();

@@ -17,9 +17,6 @@ EngineFileTip1::EngineFileTip1(sf::RenderWindow& t_window, sf::Font& t_font, Dat
 
 void EngineFileTip1::engineFile()
 {
-    NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
-    NewDataAll_.newMaps(true);
-
     bool isError = false;
 
     m_ListHero = m_DataAll.m_DataPath.retrieveHeroData(m_DataAll.m_DataMaps.getPutSaveCode(), isError);

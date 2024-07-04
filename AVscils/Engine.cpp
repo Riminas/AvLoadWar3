@@ -13,6 +13,7 @@
 #include "EngineFileTip1.h"
 #include "key.h"
 #include "LoadCommands.h"
+#include "StringConvector.h"
 
 bool isExetTree = false;
 
@@ -81,13 +82,32 @@ void Engine::updateWindowVisibility()
     HWND hWndWindow = GetForegroundWindow();
 
     if (IsWindowInFocus(hWndWindow)) {
+        if (m_NewIsVisible == true)
+            return;
+
         if (m_IsVisibleOwnerWindow == false) {
             NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
             NewDataAll_.newWarcrft(hWndWindow);
-            m_OwnerWindow.initializeButtonsCommands();
+            if (m_DataAll.isNewWarcrft) {
+                m_Window.setVisible(true);
+                m_OwnerWindow.initializeButtonsCommands();
+            }
+            else {
+                m_NewIsVisible = true;
+                m_Window.setVisible(false);
+                return;
+            }
         }
 
         m_OwnerWindow.activeGameTrue(hWndWindow);
+
+        if (m_DataAll.m_DataMaps.m_IsNewInfo) {
+            m_IsActiveWindow[0] = false;
+            m_DataAll.m_DataMaps.m_IsNewInfo = false;
+            m_DataAll.m_DataMaps.m_PutSaveCode = m_DataAll.m_DataMaps.m_LastPathSaveCode;
+            m_EngineFileTip2.initialize();
+        }
+
         m_EngineFileTip2.activeGameTrue(hWndWindow);
         
         m_IsVisibleOwnerWindow = true;
@@ -98,6 +118,7 @@ void Engine::updateWindowVisibility()
                 checkKeyStates();
     }
     else {
+        m_NewIsVisible = false;
         m_OwnerWindow.activeGameFalse();
 
         m_IsVisibleOwnerWindow = false;
@@ -281,24 +302,81 @@ void Engine::checkKeyStates() {
 HWND hWnd;
 std::map<std::wstring, std::wstring> buttonPaths; // Для хранения имен кнопок и путей программ
 
-// Функция загрузки данных из файла StartPath.ini
 bool LoadButtonData(const wchar_t* filename) {
-    std::wifstream file(filename);
-    std::wstring line;
-    bool dataLoaded = false;
+    HANDLE hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return false;
+    }
 
-    while (std::getline(file, line)) {
-        size_t pos = line.find(L']');
-        if (pos != std::wstring::npos) {
-            std::wstring buttonName = line.substr(1, pos - 1);
-            std::wstring programPath = line.substr(pos + 2); // Пропускаем "] "
+    DWORD fileSize = GetFileSize(hFile, NULL);
+    if (fileSize == INVALID_FILE_SIZE || fileSize == 0) {
+        CloseHandle(hFile);
+        return false;
+    }
+
+    char* buffer = new char[fileSize + 1];
+    DWORD bytesRead;
+    BOOL result = ReadFile(hFile, buffer, fileSize, &bytesRead, NULL);
+    CloseHandle(hFile);
+
+    if (!result || bytesRead == 0) {
+        delete[] buffer;
+        return false;
+    }
+
+    buffer[bytesRead] = '\0'; // Добавляем null-терминатор
+
+    std::string content(buffer);
+    delete[] buffer;
+
+    StringConvector StringConvector_;
+    std::wstring wcontent = StringConvector_.utf8_to_utf16(content);
+
+    if (wcontent[wcontent.size() - 1] != L'\n')
+        wcontent = wcontent + L'\n';
+
+    size_t pos = 0;
+    while ((pos = wcontent.find(L'\n')) != std::wstring::npos) {
+        std::wstring line = wcontent.substr(0, pos);
+        wcontent.erase(0, pos + 1);
+
+        size_t bracketPos = line.find(L']');
+        if (bracketPos != std::wstring::npos) {
+            std::wstring buttonName = line.substr(1, bracketPos - 1);
+            std::wstring programPath = line.substr(bracketPos + 2); // Пропускаем "] "
+            if (programPath[programPath.size() - 1] == L'\r')
+                programPath.erase(programPath.size() - 1);
+
+            // Проверяем, начинается ли programPath на букву A-Z или a-z
+            if (!programPath.empty() && !iswalpha(programPath[0])) {
+                programPath.erase(0, 1); // Удаляем первый символ
+            }
+
             buttonPaths[buttonName] = programPath;
-            dataLoaded = true;
         }
     }
 
-    return dataLoaded;
+    return !buttonPaths.empty();
 }
+
+//// Функция загрузки данных из файла Path.ini
+//bool LoadButtonData(const wchar_t* filename) {
+//    std::wifstream file(filename);
+//    std::wstring line;
+//    bool dataLoaded = false;
+//
+//    while (std::getline(file, line)) {
+//        size_t pos = line.find(L']');
+//        if (pos != std::wstring::npos) {
+//            std::wstring buttonName = line.substr(1, pos - 1);
+//            std::wstring programPath = line.substr(pos + 2); // Пропускаем "] "
+//            buttonPaths[buttonName] = programPath;
+//            dataLoaded = true;
+//        }
+//    }
+//
+//    return dataLoaded;
+//}
 
 // Функция запуска программы с правами администратора
 void LaunchProgramWithAdminRights(LPCWSTR programPath) {
@@ -356,6 +434,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         else if (LOWORD(wParam) >= ID_WARCRAFT_MENU_START) {
             int buttonIndex = LOWORD(wParam) - ID_WARCRAFT_MENU_START;
             if (buttonIndex >= 0 && buttonIndex < buttonPaths.size()) {
+
                 auto it = std::next(buttonPaths.begin(), buttonIndex);
                 LaunchProgramWithAdminRights(it->second.c_str());
             }

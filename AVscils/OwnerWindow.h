@@ -22,6 +22,8 @@ private:
 	void setupWindow();
 	int mouseButtonPressed(const sf::Vector2i& event, bool isWindow2Visible[]);
 	int mouseButtonMenuPressed(const sf::Vector2i& event, bool isWindow2Visible[]);
+	bool isVisibleButton(const int& num);
+	void updateButtonsVisible();
 	void updatePosition(const sf::Vector2f& newPoition);
 
 	std::vector<Button> m_Buttons/* = std::vector<Button>(5)*/;
