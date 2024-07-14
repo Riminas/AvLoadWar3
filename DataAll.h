@@ -2,7 +2,7 @@
 #include "DataPath.h"
 #include "DataMaps.h"
 #include "OptionsData.h"
-#include "Commands.h"
+#include "DataCommands.h"
 #include <wtypes.h>
 
 class DataAll
@@ -13,10 +13,13 @@ public:
     DataPath m_DataPath;
     DataMaps m_DataMaps;
     OptionsData m_OptionsData;
-    Commands m_Commands;
+    DataCommands m_DataCommands;
 
     bool isNewMaps = false;
     bool isNewWarcrft = false;
+    bool isVisibleWindow = true;
+    bool isMapsStart = false;
+    bool m_IsUpdataOwnerWindow = false;
 private:
 };
 
@@ -27,7 +30,7 @@ class NewDataAll
 public:
 	NewDataAll(DataAll& t_DataAll, sf::RenderWindow& t_Window, sf::Font& t_Font);
 
-    void newMaps(const bool& isNoCommands = false, const bool& isOptions = false);
+    void newMaps(const bool& isNoDataCommands = false, const bool& isOptions = false);
     void newWarcrft(HWND& hWndWindow);
 private:
 

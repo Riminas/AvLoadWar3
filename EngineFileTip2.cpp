@@ -44,9 +44,6 @@ short EngineFileTip2::initialize() {
 }
 
 bool EngineFileTip2::engineFile() {
-    NewDataAll NewDataAll_(m_DataAll, m_Window, font);
-    NewDataAll_.newMaps(true);
-
     bool isError = false;
     m_ListHero = m_DataAll.m_DataPath.retrieveHeroData(m_DataAll.m_DataMaps.getPutSaveCode(), isError);
     if (isError) return false;
@@ -96,7 +93,30 @@ void EngineFileTip2::activeGameTrue(const HWND& hWndWindow, const bool& isUpdata
         const int width = rect.right - rect.left;
         const int height = rect.bottom - rect.top;
         const float x = width - 400.0f - 41.0f;
-        const float y = height / 4.0f * 3.0f - 20 - (m_ListHero.size() * 25.0f + 25.0f);
+        float y = height / 4.0f * 3.0f - 20 - (m_ListHero.size() * 25.0f + 25.0f);
+
+        if (y < 0) {
+            y = (height % 25) / 2;
+
+            int num = m_ListHero.size() * 25.0f;
+
+            if (height < num) {
+                int num2 = (height / 25.f);
+                std::vector<DataPath::HeroInfo> listHero{};
+                listHero.resize(num2);
+                std::vector<ListHeroDraw> listHeroDraw{};
+                listHeroDraw.resize(num2);
+                int j = 0;
+                for (size_t i = m_ListHero.size() - num2; auto & p : listHero) {
+                    p = m_ListHero[i];
+                    listHeroDraw[j] = m_ListHeroDraw[i+1];
+                    i++;
+                    j++;
+                }
+                m_ListHero = listHero;
+                m_ListHeroDraw = listHeroDraw;
+            }
+        }
 
         sf::Vector2f newPosition = sf::Vector2f(x, y);
 
@@ -123,7 +143,7 @@ std::wstring EngineFileTip2::getPathListHero(const int& i) {
 void EngineFileTip2::createHeroDraw(int index, unsigned int characterSize) {
     bool isLastElement = (index == m_ListHero.size());
     m_ListHeroDraw[index].shape.setSize(sf::Vector2f(400, 23));
-    m_ListHeroDraw[index].shape.setFillColor(sf::Color(220, 220, 220));
+    m_ListHeroDraw[index].shape.setFillColor(sf::Color::White);
     m_ListHeroDraw[index].shape.setOutlineColor(sf::Color::Black);
     m_ListHeroDraw[index].shape.setOutlineThickness(2);
 

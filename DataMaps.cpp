@@ -5,16 +5,17 @@
 #include <filesystem>
 #include <string>
 #include <algorithm>
+#include <ShlObj.h>
 
+#include "LoadDataFail.h"
 #include "StringToString.h"
 #include "DataMaps.h"
-#include <ShlObj.h>
 
 namespace fs = std::filesystem;
 
-void DataMaps::NameMaps(const std::wstring& fileName) {
+void DataMaps::NameMaps() {
     StringToString stringToString;
-    auto nameFileRemove = stringToString.removeString(fileName);
+    auto nameFileRemove = stringToString.removeString(m_NameMapsFull);
 
     m_NameMaps = nameFileRemove[0];
     for (const std::wstring& part : nameFileRemove | std::views::drop(1)) {
@@ -51,17 +52,21 @@ std::wstring DataMaps::utf8_to_utf16(const std::string& str) {
 }
 
 bool DataMaps::loadDatFail(const std::wstring& fullPath) {
-    std::wstring str = m_pathDatMap + L'\\' + m_NameMaps + m_pathFile;
-    std::ifstream inFile(str, std::ios::binary);
-    if (!inFile.is_open()) {
-        return false;
-    }
+    const std::wstring pathFull = m_pathDatMap + L'\\' + m_NameMaps + m_pathFile;
 
-    std::vector<char> buffer((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
-    std::string utf8Text(buffer.begin(), buffer.end());
+    LoadDataFail LoadDataFail_;
+    m_PutSaveCode = LoadDataFail_.loadDataFail(pathFull);
 
-    // Конвертируем прочитанный текст в std::wstring
-    m_PutSaveCode = utf8_to_utf16(utf8Text);
+    //std::ifstream inFile(str, std::ios::binary);
+    //if (!inFile.is_open()) {
+    //    return false;
+    //}
+
+    //std::vector<char> buffer((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+    //std::string utf8Text(buffer.begin(), buffer.end());
+
+    //// Конвертируем прочитанный текст в std::wstring
+    //m_PutSaveCode = utf8_to_utf16(utf8Text);
 
     if(std::filesystem::is_directory((fullPath + m_PutSaveCode)))
         return true;

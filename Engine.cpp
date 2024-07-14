@@ -12,8 +12,9 @@
 #include "SkillsUpgradeStart.h"
 #include "EngineFileTip1.h"
 #include "key.h"
-#include "LoadCommands.h"
+#include "LoadDataCommands.h"
 #include "StringConvector.h"
+#include "EngineDataCommands.h"
 
 bool isExetTree = false;
 
@@ -22,7 +23,8 @@ HHOOK g_hHook = NULL;
 std::unordered_map<int, std::chrono::high_resolution_clock::time_point> keyPressTimes;
 
 Engine::Engine()
-    : m_EngineFileTip2(m_Window, m_Font, m_DataAll), m_OwnerWindow(m_Window, m_Font, m_DataAll, isExetTree, m_IsVisibleLoad) // Инициализация EngineFileTip2 с ссылками на DataPath и DataMaps
+    : m_EngineFileTip2(m_Window, m_Font, m_DataAll), 
+    m_OwnerWindow(m_Window, m_Font, m_DataAll, isExetTree, m_IsVisibleLoad) // Инициализация EngineFileTip2 с ссылками на DataPath и DataMaps
 {
 }
 
@@ -33,7 +35,6 @@ void Engine::engine1()
     if (!initialize())
         return;
 
-
     while (m_Window.isOpen()) {
 
         // Обработка сообщений Windows
@@ -43,10 +44,24 @@ void Engine::engine1()
             DispatchMessage(&msg);
         }
 
-
         processEvents();
         updateWindowVisibility();
         draw();
+
+        // Проверка autoSave и времени
+        if (m_DataAll.m_OptionsData.autoSave && m_DataAll.m_OptionsData.isStaitAuto && m_IsVisibleOwnerWindow) {
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            auto duration = duration_cast<std::chrono::milliseconds>(currentTime - m_DataAll.m_OptionsData.lastSaveTime).count();
+
+            if (duration >= m_DataAll.m_OptionsData.timeDelay) {
+                // Вызов функции сохранения
+                LoadManager LoadManager_(m_DataAll.m_DataPath.m_hWndWindow);
+                LoadManager_.sendLoadDataCommands({ m_DataAll.m_DataCommands.saveCmd.str }, false);
+                
+                // Обновление времени последнего сохранения
+                m_DataAll.m_OptionsData.lastSaveTime = currentTime;
+            }
+        }
 
         if (isExetTree)
             m_Window.close();
@@ -82,14 +97,35 @@ void Engine::updateWindowVisibility()
     HWND hWndWindow = GetForegroundWindow();
 
     if (IsWindowInFocus(hWndWindow)) {
-        if (m_IsVisibleOwnerWindow == false) {
+        if (m_NewIsVisible == true)
+            return;
+
             NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
+        if (m_IsVisibleOwnerWindow == false) {
             NewDataAll_.newWarcrft(hWndWindow);
-            m_OwnerWindow.initializeButtonsCommands();
+            if (m_DataAll.isNewWarcrft) {
+                m_Window.setVisible(true);
+                m_OwnerWindow.initializeButtonsDataCommands();
+            }
+            else {
+                m_NewIsVisible = true;
+                m_Window.setVisible(false);
+                return;
+            }
+        }
+        if (m_DataAll.isNewWarcrft) {
+            NewDataAll_.newMaps();
         }
 
         m_OwnerWindow.activeGameTrue(hWndWindow);
-        m_EngineFileTip2.activeGameTrue(hWndWindow);
+
+        if (m_DataAll.m_DataMaps.m_IsNewInfo) {
+            m_IsActiveWindow[0] = false;
+            m_DataAll.m_DataMaps.m_IsNewInfo = false;
+            m_DataAll.m_DataMaps.m_PutSaveCode = m_DataAll.m_DataMaps.m_LastPathSaveCode;
+        }
+
+        //m_EngineFileTip2.activeGameTrue(hWndWindow);
         
         m_IsVisibleOwnerWindow = true;
 
@@ -99,6 +135,7 @@ void Engine::updateWindowVisibility()
                 checkKeyStates();
     }
     else {
+        m_NewIsVisible = false;
         m_OwnerWindow.activeGameFalse();
 
         m_IsVisibleOwnerWindow = false;
@@ -123,12 +160,14 @@ void Engine::processEvents()
 void Engine::draw() {
     m_Window.clear(sf::Color(0, 255, 0));
 
-    m_OwnerWindow.draw();
+    if (m_DataAll.isMapsStart) {
+        m_OwnerWindow.draw();
 
-    if (m_IsVisibleOwnerWindow) {
+        if (m_IsVisibleOwnerWindow) {
 
-        if (m_IsActiveWindow[0])
-            m_EngineFileTip2.draw();
+            if (m_IsActiveWindow[0])
+                m_EngineFileTip2.draw();
+        }
     }
 
     m_Window.display();
@@ -159,27 +198,25 @@ void Engine::handleMouseButtonPressed(sf::Event& event)
             LoadManager LoadManager_(m_DataAll.m_DataPath.m_hWndWindow);
             LoadManager_.executeLoad(wstr);
 
-            std::wstring nameMaps = m_DataAll.m_DataMaps.getNameMaps();
-            SkillsUpgradeStart ScilsUpgradeStart_(nameMaps);
-            ScilsUpgradeStart_.skillsUpgradeStart();
+            if (m_DataAll.m_OptionsData.autoSkillsUpgrade) {
+                const std::wstring& nameMaps = m_DataAll.m_DataMaps.getNameMaps();
+                SkillsUpgradeStart ScilsUpgradeStart_(nameMaps, m_DataAll.versionWarcraft3);
+                ScilsUpgradeStart_.skillsUpgradeStart();
+            }
 
-            LoadCommands LoadCommands_(m_DataAll);
-            LoadCommands_.loadCommands();
+            //LoadDataCommands LoadDataCommands_(m_DataAll);
+            //LoadDataCommands_.loadDataCommands();
 
-
-            std::string cmdStr = "\0";
-            if (m_DataAll.m_Commands.returnCmd.isLoad) { cmdStr = m_DataAll.m_Commands.returnCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.saveCmd.isLoad) { cmdStr = m_DataAll.m_Commands.saveCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.craftCmd.isLoad) { cmdStr = m_DataAll.m_Commands.craftCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.camCmd.isLoad) { cmdStr = m_DataAll.m_Commands.camCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.statsCmd.isLoad) { cmdStr = m_DataAll.m_Commands.statsCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.clearCmd.isLoad) { cmdStr = m_DataAll.m_Commands.clearCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.cleanCmd.isLoad) { cmdStr = m_DataAll.m_Commands.cleanCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.strCmd.isLoad) { cmdStr = m_DataAll.m_Commands.strCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.agiCmd.isLoad) { cmdStr = m_DataAll.m_Commands.agiCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
-            if (m_DataAll.m_Commands.intCmd.isLoad) { cmdStr = m_DataAll.m_Commands.intCmd.str; LoadManager_.sendLoadCommands({ cmdStr }, true); }
+            EngineDataCommands EngineDataCommands_(m_DataAll.m_DataCommands);
+            EngineDataCommands_.avtoCommand(m_DataAll.m_DataPath.m_hWndWindow);
 
             m_IsVisibleLoad = false;
+
+            if (m_DataAll.m_OptionsData.autoSave) {
+                m_DataAll.m_OptionsData.isStaitAuto = true;
+                m_DataAll.m_OptionsData.lastSaveTime = std::chrono::high_resolution_clock::now();
+            }
+
         }
         else if (i == -2) {
             m_IsActiveWindow[0] = !m_IsActiveWindow[0];
@@ -312,6 +349,9 @@ bool LoadButtonData(const wchar_t* filename) {
     StringConvector StringConvector_;
     std::wstring wcontent = StringConvector_.utf8_to_utf16(content);
 
+    if (wcontent[wcontent.size() - 1] != L'\n')
+        wcontent = wcontent + L'\n';
+
     size_t pos = 0;
     while ((pos = wcontent.find(L'\n')) != std::wstring::npos) {
         std::wstring line = wcontent.substr(0, pos);
@@ -321,12 +361,39 @@ bool LoadButtonData(const wchar_t* filename) {
         if (bracketPos != std::wstring::npos) {
             std::wstring buttonName = line.substr(1, bracketPos - 1);
             std::wstring programPath = line.substr(bracketPos + 2); // Пропускаем "] "
+            if (programPath[programPath.size() - 1] == L'\r')
+                programPath.erase(programPath.size() - 1);
+
+            // Проверяем, начинается ли programPath на букву A-Z или a-z
+            if (!programPath.empty() && !iswalpha(programPath[0])) {
+                programPath.erase(0, 1); // Удаляем первый символ
+            }
+
             buttonPaths[buttonName] = programPath;
         }
     }
 
     return !buttonPaths.empty();
 }
+
+//// Функция загрузки данных из файла Path.ini
+//bool LoadButtonData(const wchar_t* filename) {
+//    std::wifstream file(filename);
+//    std::wstring line;
+//    bool dataLoaded = false;
+//
+//    while (std::getline(file, line)) {
+//        size_t pos = line.find(L']');
+//        if (pos != std::wstring::npos) {
+//            std::wstring buttonName = line.substr(1, pos - 1);
+//            std::wstring programPath = line.substr(pos + 2); // Пропускаем "] "
+//            buttonPaths[buttonName] = programPath;
+//            dataLoaded = true;
+//        }
+//    }
+//
+//    return dataLoaded;
+//}
 
 // Функция запуска программы с правами администратора
 void LaunchProgramWithAdminRights(LPCWSTR programPath) {
@@ -384,6 +451,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         else if (LOWORD(wParam) >= ID_WARCRAFT_MENU_START) {
             int buttonIndex = LOWORD(wParam) - ID_WARCRAFT_MENU_START;
             if (buttonIndex >= 0 && buttonIndex < buttonPaths.size()) {
+
                 auto it = std::next(buttonPaths.begin(), buttonIndex);
                 LaunchProgramWithAdminRights(it->second.c_str());
             }

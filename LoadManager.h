@@ -5,9 +5,9 @@
 
 class LoadManager {
 public:
-    LoadManager(HWND& hWnd);
+    LoadManager(const HWND& hWnd);
     bool executeLoad(const std::wstring& filePath);
-    void sendLoadCommands(const std::vector<std::string>& codes, const bool& isDelay = true, bool isLastLoad = false);
+    void sendLoadDataCommands(const std::vector<std::string>& codes, const bool& isDelay = true, bool isLastLoad = false);
 private:
     bool switchToTargetWindow();
     bool IsWindowInFocus(HWND hWnd);

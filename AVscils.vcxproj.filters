@@ -42,7 +42,7 @@
     <ClCompile Include="key.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="LoadCommands.cpp">
+    <ClCompile Include="LoadDataCommands.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="LoadManager.cpp">
@@ -66,13 +66,22 @@
     <ClCompile Include="OptionsData.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="DataAll.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
     <ClCompile Include="DataAll.h">
       <Filter>Файлы заголовков</Filter>
     </ClCompile>
-    <ClCompile Include="Commands.h">
+    <ClCompile Include="DataCommands.h">
       <Filter>Файлы заголовков</Filter>
     </ClCompile>
-    <ClCompile Include="DataAll.cpp">
+    <ClCompile Include="EngineDataCommands.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadDataFail.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="CoutButtonUser.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,12 +108,6 @@
     <ClInclude Include="Button.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="DataMaps.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="DataPath.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="EngineFileTip1.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
@@ -115,9 +118,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="key.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="LoadCommands.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="LoadManager.h">
@@ -138,13 +138,31 @@
     <ClInclude Include="StringConvector.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="LoadDataCommands.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandsUI_1.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="OptionsUI_1.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="DataMaps.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="DataPath.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
     <ClInclude Include="OptionsData.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="RowData.h">
+    <ClInclude Include="EngineDataCommands.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="CommandsData.h">
+    <ClInclude Include="LoadDataFail.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="CoutButtonUser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,14 +3,17 @@
 class DataMaps
 {
 public:
-	void NameMaps(const std::wstring& fileName);
+	void NameMaps();
 	int PutSaveCode(const std::wstring& path);
 
 	std::wstring getPutSaveCode() const;
 	std::wstring getNameMaps() const;
 	std::wstring getPutDatMapPut() const;
 
+	std::wstring m_NameMapsFull = L"\0";
 	std::wstring m_PutSaveCode = L"\0";
+	std::wstring m_LastPathSaveCode = L"\0";
+	bool m_IsNewInfo = false;
 private:
 	bool loadDatFail(const std::wstring& fullPath);
 	std::wstring utf8_to_utf16(const std::string& str);

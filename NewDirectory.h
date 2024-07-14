@@ -4,8 +4,8 @@
 #include <vector>
 #include <filesystem>
 #include <wtypes.h>
-#include "RowData.h"
-#include "CommandsData.h"
+#include "OptionsUI_1.h"
+#include "CommandsUI_1.h"
 #include "DataAll.h"
 
 struct DirectoryEntry {
@@ -24,13 +24,13 @@ public:
     int newDirectory();
 
 private:
-    void initializeText(sf::Text& text, const std::wstring& textString = L"", const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color::Black) const;
-    void initializeRectangle(sf::RectangleShape& rectangle, const sf::Vector2f& size = { 10, 10 }, const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color(240, 240, 240)) const;
+    void initializeText(sf::Text& text, const std::wstring& textString = L"", const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color::Black, const float& letterSpacing = 1.0f) const;
+    void initializeRectangle(sf::RectangleShape& rectangle, const sf::Vector2f& size = { 10, 10 }, const sf::Vector2f& position = { 0,0 }, const sf::Color& color = sf::Color::White) const;
     std::wstring run();
     void initializeWindow();
     void initializeLine(sf::RectangleShape& line, const sf::Vector2f& size, const sf::Vector2f& position);
     void initializeScrollbar(const float& windowWidth, const float& windowHeight);
-    void initializeCommands();
+    void initializeDataCommands();
     void initializeSettings();
     void initializeTextArray(const std::vector<std::pair<std::string, float>>& dat, unsigned int characterSize);
     void activeMenu();
@@ -61,11 +61,11 @@ private:
     sf::Text selectedTextYes;
     sf::RectangleShape directoryButton;
     sf::Text directoryText;
-    sf::RectangleShape commandsButton;
-    sf::Text commandsText;
+    sf::RectangleShape DataCommandsButton;
+    sf::Text DataCommandsText;
     sf::RectangleShape optionsButton;
     sf::Text optionsText;
-    sf::RectangleShape bottomLineCommandsData;
+    sf::RectangleShape bottomLineCommandsUI_1;
     DirectoryEntry rootDirectory;
     std::vector<sf::Text> directoryTexts;
     std::vector<sf::ConvexShape> directoryTriangles; // Добавлено
@@ -82,8 +82,8 @@ private:
     const std::wstring pathFile = L"\\Path.dat";
     bool& isExetTree;
     int numMenu = 1;
-    std::vector<CommandsData> m_CommandsData;
-    std::vector<RowData> m_RowData;
+    std::vector<CommandsUI_1> m_CommandsUI_1;
+    std::vector<OptionsUI_1> m_OptionsUI_1;
     sf::RenderWindow& window;
     sf::Font& font;
     DataAll& m_DataAll;

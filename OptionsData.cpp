@@ -7,15 +7,6 @@
 
 #include "OptionsData.h"
 
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <sstream>
-
-#include "OptionsData.h"
-
 OptionsData::OptionsData()
 {
     std::ifstream file(m_FullPath.c_str());
@@ -29,12 +20,7 @@ OptionsData::OptionsData()
     }
 
     // Определяем команды и создаем карту для их привязки к переменным
-    const std::vector<std::string> commands = { "[autoСlickerKey]", "[autoСlickerMaus]", "[autoStart]"};
-    std::unordered_map<std::string, bool*> commandMap = {
-        {"[autoСlickerKey]", &autoСlickerKey},
-        {"[autoСlickerMaus]", &autoСlickerMaus},
-        {"[autoStart]", &autoStart}
-    };
+    
 
     std::string line;
     std::unordered_map<std::string, std::string> fileContent;
@@ -57,32 +43,45 @@ OptionsData::OptionsData()
 
     file.close();
 
-    // Проверяем содержимое и устанавливаем значения
     bool shouldRewrite = false;
-    for (const auto& command : commands) {
-        if (fileContent.find(command) != fileContent.end()) {
-            const std::string& value = fileContent[command];
-            if (value == "true") {
-                *commandMap[command] = true;
-            }
-            else if (value == "false") {
-                *commandMap[command] = false;
-            }
-            else {
-                // Если значение не "true" и не "false", записываем значение по умолчанию
-                shouldRewrite = true;
-                if (command == "[autoСlickerKey]") {
-                    *commandMap[command] = autoСlickerKey;
+    if (!fileContent.empty()) {
+        // Проверяем содержимое и устанавливаем значения
+        for (auto& data : m_DataOptions) {
+            if (fileContent.find(data.first) != fileContent.end()) {
+                const std::string& value = fileContent[data.first];
+                if (value == "true") {
+                    if(data.first == "[autoSkillsUpgrade]")
+                        data.second = false;
+                    else
+                        data.second = true;
                 }
-                else if (command == "[autoСlickerMaus]") {
-                    *commandMap[command] = autoСlickerMaus;
+                else if (value == "false") {
+                    data.second = false;
                 }
-                else if (command == "[autoStart]") {
-                    *commandMap[command] = autoStart;
+                else {
+                    // Если значение не "true" и не "false", записываем значение по умолчанию
+                    shouldRewrite = true;
+                    /*if (command == "[autoСlickerKey]") {
+                        *m_CommandMap[command] = autoСlickerKey;
+                    }
+                    else if (command == "[autoСlickerMaus]") {
+                        *m_CommandMap[command] = autoСlickerMaus;
+                    }
+                    else if (command == "[autoSave]") {
+                        *m_CommandMap[command] = autoSave;
+                    }
+                    else if (command == "[autoStart]") {
+                        *m_CommandMap[command] = autoStart;
+                    }
+                    else if (command == "[autoSkillsUpgrade]") {
+                        *m_CommandMap[command] = autoSkillsUpgrade;
+                    }*/
                 }
             }
         }
     }
+    else
+        shouldRewrite = true;
 
     // Если необходимо, переписываем файл с значениями по умолчанию
     if (shouldRewrite) {
@@ -94,9 +93,12 @@ void OptionsData::saveFileOptions() const
 {
     std::ofstream fileOut(m_FullPath.c_str());
     if (fileOut.is_open()) {
-        fileOut << "[autoСlickerKey] " << (autoСlickerKey ? "true" : "false") << std::endl;
-        fileOut << "[autoСlickerMaus] " << (autoСlickerMaus ? "true" : "false") << std::endl;
-        fileOut << "[autoStart] " << (autoStart ? "true" : "false") << std::endl;
+        for(const auto& data : m_DataOptions)
+            fileOut << data.first + " " << (data.second ? "true" : "false") << std::endl;
+        //fileOut << "[autoСlickerMaus] " << (autoСlickerMaus ? "true" : "false") << std::endl;
+        //fileOut << "[autoSave] " << (autoSave ? "true" : "false") << std::endl;
+        //fileOut << "[autoStart] " << (autoStart ? "true" : "false") << std::endl;
+        //fileOut << "[autoSkillsUpgrade] " << (autoSkillsUpgrade ? "true" : "false") << std::endl;
         fileOut.close();
     }
 }

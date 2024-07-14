@@ -38,6 +38,7 @@ private:
     bool m_IsVisibleLoad = false;
     bool m_IsLastActive = true;
     bool m_IsVisibleOwnerWindow = true;
+    bool m_NewIsVisible = true;
 
     std::unordered_map<int, std::chrono::high_resolution_clock::time_point> keyPressTimes;
     int currentKey = -1;  // Track the currently pressed key

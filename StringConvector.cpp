@@ -45,3 +45,9 @@ void StringConvector::adjustTextToFit(sf::Text& text, float maxWidth) {
 
     text.setString(str + L"...");
 }
+
+std::wstring StringConvector::toLower(const std::wstring& str) {
+    std::wstring result = str;
+    std::transform(result.begin(), result.end(), result.begin(), ::towlower);
+    return result;
+}

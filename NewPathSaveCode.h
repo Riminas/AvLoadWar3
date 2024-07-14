@@ -7,7 +7,6 @@ public:
     bool newPathSaveCode(std::wstring& t_Path);
 
 private:
-    void loadFile(std::wstring& t_Path);
     void saveFile(const std::wstring& t_Path, std::ofstream& outFile);
     std::wstring BrowseFileDialog() const;
 

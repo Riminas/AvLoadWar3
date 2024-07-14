@@ -9,7 +9,7 @@
 #include <functional>
 #include <algorithm>
 #include <fstream>
-#include "LoadCommands.h"
+#include "LoadDataCommands.h"
 #include "StringConvector.h"
 
 #include "NewDirectory.h"
@@ -31,9 +31,10 @@ NewDirectory::NewDirectory(sf::RenderWindow& t_Window, sf::Font& t_font, const s
     initializeWindow();
 }
 
-inline void NewDirectory::initializeText(sf::Text& text, const std::wstring& textString, const sf::Vector2f& position, const sf::Color& color) const {
+inline void NewDirectory::initializeText(sf::Text& text, const std::wstring& textString, const sf::Vector2f& position, const sf::Color& color, const float& letterSpacing) const {
     text.setFont(font);
     text.setCharacterSize(16);
+    text.setLetterSpacing(letterSpacing);;
 
     text.setString(textString);
     text.setPosition(position);
@@ -58,7 +59,7 @@ void NewDirectory::initializeWindow() {
 
     // Общее меню
     initializeRectangle(background, sf::Vector2f(windowWidth, windowHeight), newPosition);
-    initializeText(title, L"Maps: " + nameMaps, newPosition + sf::Vector2f{ 20, 0 });
+    initializeText(title, L"Maps: " + m_DataAll.m_DataMaps.m_NameMapsFull, newPosition + sf::Vector2f{ 20, 0 });
     initializeLine(topLine, sf::Vector2f(windowWidth, 2), sf::Vector2f(0, 55) + newPosition);
     initializeLine(bottomLine, sf::Vector2f(windowWidth, 2), sf::Vector2f(0, windowHeight - 35) + newPosition);
     initializeRectangle(closeButton, sf::Vector2f(20, 19), sf::Vector2f(windowWidth - 30, -5) + newPosition, sf::Color::Red);
@@ -70,7 +71,7 @@ void NewDirectory::initializeWindow() {
 
     const std::vector<std::pair<std::wstring, std::pair<sf::RectangleShape&, sf::Text&>>> nameRazels = {
         {L"Directory", {directoryButton, directoryText}},
-        {L"Commands", {commandsButton, commandsText}},
+        {L"DataCommands", {DataCommandsButton, DataCommandsText}},
         {L"Options", {optionsButton, optionsText}},
     };
     const int maxSize = nameRazels.size();
@@ -79,7 +80,7 @@ void NewDirectory::initializeWindow() {
         const auto& [name, components] = nameRazels[i];
         auto& [button, text] = components;
         initializeRectangle(button, sf::Vector2f(windowWidth / maxSize, 30), newPosition + sf::Vector2f(windowWidth / maxSize * i, 25));
-        initializeText(text, name, button.getPosition() + sf::Vector2f{ 20, 5 });
+        initializeText(text, name, button.getPosition() + sf::Vector2f{ 20, 5 }, sf::Color::Black, 1.5f);
     }
 
     activeMenu();
@@ -97,7 +98,7 @@ void NewDirectory::initializeWindow() {
     updateDirectoryTexts();
 
     // Меню настройки команд
-    initializeCommands();
+    initializeDataCommands();
 
     // Меню настроек
     initializeSettings();
@@ -116,57 +117,60 @@ void NewDirectory::initializeScrollbar(const float& windowWidth, const float& wi
     scrollbarThumb.setPosition(scrollbar.getPosition());
 
     backgroundDirectory.setFillColor(sf::Color(0, 60, 160, 80));
-    backgroundDirectory.setSize(sf::Vector2f(windowWidth - 15, 25));
+    backgroundDirectory.setSize(sf::Vector2f(windowWidth, 30));
 
     rootDirectory.isOpen = true;
 }
 
 
-void NewDirectory::initializeCommands() {
-    std::vector<std::pair<std::string, sf::Vector2f>> commandConfigs = {
-        {"[Return]", {25, 80}},
-        {"[Save]", {25, 105}},
-        {"[Craft]", {25, 130}},
-        {"[Cam]", {25, 155}},
-        {"[Stats]", {25, 180}},
-        {"[Clear]", {25, 205}},
-        {"[Clean]", {25, 230}},
-        {"[Str]", {25, 255}},
-        {"[Agi]", {25, 280}},
-        {"[Int]", {25, 305}},
+void NewDirectory::initializeDataCommands() {
+    const float OFFSET_X = 25;
+    const float INITIAL_Y = 81;
+
+    std::vector<std::string> commandNames = {
+        "[Return1]", "[Return2]", "[Return3]", "[Save]", "[Craft]", "[Cam]", "[Stats]", "[Clear]", "[Clean]", "[Str]", "[Agi]", "[Int]"
     };
 
-    m_CommandsData.resize(commandConfigs.size());
-    for (size_t i = 0; i < commandConfigs.size(); ++i) {
-        auto& [commandName, positionOffset] = commandConfigs[i];
-        auto& command = *m_DataAll.m_Commands.commandMap[commandName];
-        if(commandName == "[Cam]")
-            m_CommandsData[i].initialize(command.isVisibleButton, command.isLoad, font, command.str, 20, sf::Color(180, 180, 180), sf::Color::Black, true);
-        else
-            m_CommandsData[i].initialize(command.isVisibleButton, command.isLoad, font, command.str, 20, sf::Color(180, 180, 180), sf::Color::Black, false);
-        m_CommandsData[i].setPosition(newPosition.x, newPosition.y + positionOffset.y, background.getSize().x, positionOffset.x);
+    m_CommandsUI_1.resize(commandNames.size());
+
+    const sf::Color buttonColor(180, 180, 180);
+    const sf::Color buttonTextColor = sf::Color::Black;
+
+    for (size_t i = 0; i < commandNames.size(); ++i) {
+        const std::string& commandName = commandNames[i];
+        auto& command = *m_DataAll.m_DataCommands.commandMap[commandName];
+
+        const bool isCamCommand = (commandName == "[Cam]" || commandName == "[Return1]" || commandName == "[Return2]" || commandName == "[Return3]");
+        m_CommandsUI_1[i].initialize(command.isVisibleButton, command.isLoad, font, command.str, 18, buttonColor, buttonTextColor, isCamCommand, command.hotKey);
+        
+        float positionY = INITIAL_Y + (i * OFFSET_X);
+        m_CommandsUI_1[i].setPosition(newPosition.x, newPosition.y + positionY, background.getSize().x, OFFSET_X);
     }
 
     m_TextArray.resize(3);
     const std::vector<std::pair<std::string, float>> dat{
-        {"Commands", 10},
+        {"DataCommands", 10},
         {"Visible", background.getSize().x/2},
-        {"AVCommands", background.getSize().x / 2 + 52},
+        {"AVDataCommands", background.getSize().x / 2 + 52},
     };
     initializeTextArray(dat, 12);
 }
 
 void NewDirectory::initializeSettings() {
-    m_RowData.resize(2);
-    const std::vector<std::tuple<std::string, sf::Vector2f>> settings = {
-        {"Автонажатия клавишь", {20, 70}},
-        {"Автонажатия правой кнопки мыши", {20, 100}},
+    const std::vector<std::tuple<std::string, sf::Vector2f, bool>> settings = {
+        {"Автонажатия клавишь", {20, 70}, m_DataAll.m_OptionsData.autoСlickerKey},
+        {"Автонажатия правой кнопки мыши", {20, 100}, m_DataAll.m_OptionsData.autoСlickerMaus},
+        {"Автосохранения", {20, 130}, m_DataAll.m_OptionsData.autoSave},
+        {"Авто запуск (нерабоатет)", {20, 160}, m_DataAll.m_OptionsData.autoStart},
+        {"Авто прокачка способностей", {20, 190}, m_DataAll.m_OptionsData.autoSkillsUpgrade},
     };
 
+    m_OptionsUI_1.resize(settings.size());
+
     for (size_t i = 0; i < settings.size(); ++i) {
-        const auto& [label, positionOffset] = settings[i];
-        m_RowData[i].initialize(m_DataAll.m_OptionsData.autoСlickerKey, font, label, 24, sf::Color(180, 180, 180), sf::Color::Black);
-        m_RowData[i].setPosition(newPosition.x + positionOffset.x, newPosition.y + positionOffset.y);
+        const auto& [label, positionOffset, optionData] = settings[i];
+        m_OptionsUI_1[i].initialize(optionData, font, label, 18, sf::Color(180, 180, 180), sf::Color::Black);
+        m_OptionsUI_1[i].setPosition(newPosition.x + positionOffset.x, newPosition.y + positionOffset.y);
     }
 }
 
@@ -182,9 +186,9 @@ void NewDirectory::initializeTextArray(const std::vector<std::pair<std::string, 
         m_TextArray[i].setPosition(sf::Vector2f(dat[i].second, 60) + newPosition); // Устанавливаем позицию по X из вектора positionsX и по Y со смещением
     }
     // Установка позиции и ширины линии
-    bottomLineCommandsData.setFillColor(sf::Color(128, 128, 128)); // Серый цвет
-    bottomLineCommandsData.setSize(sf::Vector2f(background.getSize().x, 1)); // Устанавливаем ширину линии равной ширине окна
-    bottomLineCommandsData.setPosition(newPosition.x, newPosition.y + 78); // Линия под квадратами на 2 пикселя ниже
+    bottomLineCommandsUI_1.setFillColor(sf::Color(128, 128, 128)); // Серый цвет
+    bottomLineCommandsUI_1.setSize(sf::Vector2f(background.getSize().x, 1)); // Устанавливаем ширину линии равной ширине окна
+    bottomLineCommandsUI_1.setPosition(newPosition.x, newPosition.y + 78); // Линия под квадратами на 2 пикселя ниже
 }
 
 void NewDirectory::activeMenu() {
@@ -195,8 +199,8 @@ void NewDirectory::activeMenu() {
     const sf::Color inactiveTextColor(sf::Color::Black);
 
     // Массивы кнопок и соответствующих текстов
-    std::vector<sf::RectangleShape*> buttons = { &directoryButton, &commandsButton, &optionsButton };
-    std::vector<sf::Text*> texts = { &directoryText, &commandsText, &optionsText };
+    std::vector<sf::RectangleShape*> buttons = { &directoryButton, &DataCommandsButton, &optionsButton };
+    std::vector<sf::Text*> texts = { &directoryText, &DataCommandsText, &optionsText };
 
     // Устанавливаем цвета для кнопок и текстов
     for (size_t i = 0; i < buttons.size(); ++i) {
@@ -267,7 +271,7 @@ void NewDirectory::updateDirectoryTexts() {
     std::function<void(const DirectoryEntry&, float)> addTexts = [&](const DirectoryEntry& dir, float indent) {
         if (dir.isOpen) {
             for (const auto& subDir : dir.subDirectories) {
-                    sf::Text dirText(subDir.name, font, 16);
+                    sf::Text dirText(subDir.name, font, 14);
                     dirText.setFillColor(sf::Color::Black);
                     dirText.setPosition(sf::Vector2f(38 + indent * 20, yOffset) + newPosition); // Смещение текста для размещения треугольника
                     directoryTexts.push_back(dirText);
@@ -289,11 +293,9 @@ void NewDirectory::updateDirectoryTexts() {
                     }
 
                     if (isBackgroundDirectory == false && subDir.fullPath == openDirectoryEntry.fullPath && (yOffset + newPosition.y >= 60 && yOffset <= background.getSize().y - 60 + newPosition.y)) {
-                        backgroundDirectory.setPosition(sf::Vector2f(0, yOffset) + newPosition);
+                        backgroundDirectory.setPosition(sf::Vector2f(0, yOffset-6) + newPosition);
                         isBackgroundDirectory = true;
                     }
-
-
 
                     yOffset += 30.f;
                     addTexts(subDir, indent + 1.f);
@@ -359,11 +361,12 @@ int NewDirectory::newDirectory() {
         StringConvector StringConvector_;
         std::string utf8Text = StringConvector_.utf16_to_utf8(folderPath);
         outFile.write(utf8Text.c_str(), utf8Text.size());
-
+        
         outFile.close();
         std::wcout << "New path SaveCode ( " << pathDatMapPut + L'\\' + nameMaps << pathFile << L" )" << std::endl;
         if (utf8Text == "False")
-            return 3; // Успешное выполнение
+            return 3;
+        m_DataAll.m_DataMaps.m_PutSaveCode = folderPath;
         return 1; // Успешное выполнение
     }
     else {
@@ -406,13 +409,13 @@ void NewDirectory::drawWindow() {
     else if (numMenu == 2) {
         for (sf::Text& p : m_TextArray)
             window.draw(p);
-        window.draw(bottomLineCommandsData);
+        window.draw(bottomLineCommandsUI_1);
 
-        for (CommandsData& p : m_CommandsData)
-            p.drawCommands(window);
+        for (CommandsUI_1& p : m_CommandsUI_1)
+            p.drawDataCommands(window);
     }
     else if (numMenu == 3) {
-        for (RowData& p : m_RowData)
+        for (OptionsUI_1& p : m_OptionsUI_1)
             p.drawRow(window);
     }
 
@@ -427,8 +430,8 @@ void NewDirectory::drawWindow() {
 
     window.draw(directoryButton);
     window.draw(directoryText);
-    window.draw(commandsButton);
-    window.draw(commandsText);
+    window.draw(DataCommandsButton);
+    window.draw(DataCommandsText);
     window.draw(optionsButton);
     window.draw(optionsText);
 
@@ -494,7 +497,7 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
                 title.setString(L"Maps: " + nameMaps);
             }
         }},
-        {&commandsButton, [&]() {
+        {&DataCommandsButton, [&]() {
             if (numMenu != 2) {
                 numMenu = 2;
                 activeMenu();
@@ -573,71 +576,123 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
 
         processClick(rootDirectory, 0);
     }
-    else if (numMenu == 2) {
+    if (numMenu == 2) {
         short isSquare = 0;
-        int numCommands = -1;
-        for (int i = 0; i < m_CommandsData.size(); ++i) {
-            if (m_CommandsData[i].square.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
-                numCommands = i;
+        int numDataCommands = -1;
+        for (int i = 0; i < m_CommandsUI_1.size(); ++i) {
+            if (m_CommandsUI_1[i].square.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
+                numDataCommands = i;
                 isSquare = 1;
                 break;
             }
-            else if (m_CommandsData[i].square2.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
-                numCommands = i;
+            else if (m_CommandsUI_1[i].square2.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
+                numDataCommands = i;
                 isSquare = 2;
+                break;
+            }
+            else if (m_CommandsUI_1[i].button.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
+                numDataCommands = i;
+                isSquare = 3;
                 break;
             }
         }
 
         if (isSquare != 0) {
-            auto& cmdData = m_CommandsData[numCommands];
-            bool& value = (isSquare == 1) ? cmdData.value1 : cmdData.value2;
-            value = !value;
 
-            std::vector<std::function<void()>> commands = {
-                [&] { m_DataAll.m_Commands.returnCmd.isVisibleButton = !m_DataAll.m_Commands.returnCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.saveCmd.isVisibleButton = !m_DataAll.m_Commands.saveCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.craftCmd.isVisibleButton = !m_DataAll.m_Commands.craftCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.camCmd.isVisibleButton = !m_DataAll.m_Commands.camCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.statsCmd.isVisibleButton = !m_DataAll.m_Commands.statsCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.clearCmd.isVisibleButton = !m_DataAll.m_Commands.clearCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.cleanCmd.isVisibleButton = !m_DataAll.m_Commands.cleanCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.strCmd.isVisibleButton = !m_DataAll.m_Commands.strCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.agiCmd.isVisibleButton = !m_DataAll.m_Commands.agiCmd.isVisibleButton; },
-                [&] { m_DataAll.m_Commands.intCmd.isVisibleButton = !m_DataAll.m_Commands.intCmd.isVisibleButton; }
+            int hotKeyNew = '\0';
+            auto& cmdData = m_CommandsUI_1[numDataCommands];
+            if (isSquare == 1) {
+                cmdData.value1 = !cmdData.value1;
+            }
+            else if (isSquare == 2) {
+                cmdData.value2 = !cmdData.value2;
+            }
+            //else if (isSquare == 3) {
+            //    bool isRunning = true;
+            //    while (isRunning) {
+            //        for (int key = 8; key <= 255; key++) {
+            //            if (GetAsyncKeyState(key) & 0x8000) {
+            //                if (key == VK_BACK) {
+            //                    hotKeyNew = 0;
+            //                    isRunning = false;
+            //                    break;
+            //                }
+            //                else {
+            //                    hotKeyNew = static_cast<int>(key);
+            //                    isRunning = false;
+            //                    break;
+            //                }
+            //            }
+            //        }
+            //        Sleep(50); // небольшой сон, чтобы не загружать процессор
+            //    }
+            //}
+
+            std::vector<std::function<void()>> DataCommands = {
+                [&] { m_DataAll.m_DataCommands.return1Cmd.isVisibleButton = !m_DataAll.m_DataCommands.return1Cmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.return2Cmd.isVisibleButton = !m_DataAll.m_DataCommands.return2Cmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.return3Cmd.isVisibleButton = !m_DataAll.m_DataCommands.return3Cmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.saveCmd.isVisibleButton = !m_DataAll.m_DataCommands.saveCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.craftCmd.isVisibleButton = !m_DataAll.m_DataCommands.craftCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.camCmd.isVisibleButton = !m_DataAll.m_DataCommands.camCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.statsCmd.isVisibleButton = !m_DataAll.m_DataCommands.statsCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.clearCmd.isVisibleButton = !m_DataAll.m_DataCommands.clearCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.cleanCmd.isVisibleButton = !m_DataAll.m_DataCommands.cleanCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.strCmd.isVisibleButton = !m_DataAll.m_DataCommands.strCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.agiCmd.isVisibleButton = !m_DataAll.m_DataCommands.agiCmd.isVisibleButton; },
+                [&] { m_DataAll.m_DataCommands.intCmd.isVisibleButton = !m_DataAll.m_DataCommands.intCmd.isVisibleButton; }
             };
 
-            std::vector<std::function<void()>> loadCommands = {
-                [&] { m_DataAll.m_Commands.returnCmd.isLoad = !m_DataAll.m_Commands.returnCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.saveCmd.isLoad = !m_DataAll.m_Commands.saveCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.craftCmd.isLoad = !m_DataAll.m_Commands.craftCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.camCmd.isLoad = !m_DataAll.m_Commands.camCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.statsCmd.isLoad = !m_DataAll.m_Commands.statsCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.clearCmd.isLoad = !m_DataAll.m_Commands.clearCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.cleanCmd.isLoad = !m_DataAll.m_Commands.cleanCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.strCmd.isLoad = !m_DataAll.m_Commands.strCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.agiCmd.isLoad = !m_DataAll.m_Commands.agiCmd.isLoad; },
-                [&] { m_DataAll.m_Commands.intCmd.isLoad = !m_DataAll.m_Commands.intCmd.isLoad; }
+            std::vector<std::function<void()>> loadDataCommands = {
+                [&] { m_DataAll.m_DataCommands.return1Cmd.isLoad = !m_DataAll.m_DataCommands.return1Cmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.return2Cmd.isLoad = !m_DataAll.m_DataCommands.return2Cmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.return3Cmd.isLoad = !m_DataAll.m_DataCommands.return3Cmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.saveCmd.isLoad = !m_DataAll.m_DataCommands.saveCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.craftCmd.isLoad = !m_DataAll.m_DataCommands.craftCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.camCmd.isLoad = !m_DataAll.m_DataCommands.camCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.statsCmd.isLoad = !m_DataAll.m_DataCommands.statsCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.clearCmd.isLoad = !m_DataAll.m_DataCommands.clearCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.cleanCmd.isLoad = !m_DataAll.m_DataCommands.cleanCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.strCmd.isLoad = !m_DataAll.m_DataCommands.strCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.agiCmd.isLoad = !m_DataAll.m_DataCommands.agiCmd.isLoad; },
+                [&] { m_DataAll.m_DataCommands.intCmd.isLoad = !m_DataAll.m_DataCommands.intCmd.isLoad; }
             };
+
+            //std::vector<std::function<void()>> hotKeyVector = {
+            //    [&] { m_DataAll.m_DataCommands.returnCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.saveCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.craftCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.camCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.statsCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.clearCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.cleanCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.strCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.agiCmd.hotKey = hotKeyNew; },
+            //    [&] { m_DataAll.m_DataCommands.intCmd.hotKey = hotKeyNew; }
+            //};
 
             if (isSquare == 1) {
-                commands[numCommands]();
+                DataCommands[numDataCommands]();
             }
-            else {
-                loadCommands[numCommands]();
+            else if (isSquare == 2) {
+                loadDataCommands[numDataCommands]();
             }
+            //else if (isSquare == 3) {
+            //    hotKeyVector[numDataCommands]();
+            //    cmdData.updateHotKey(hotKeyNew);
+            //}
 
             cmdData.updateCheckText();
-            LoadCommands LoadCommands_(m_DataAll);
-            LoadCommands_.saveCommands();
+            LoadDataCommands LoadDataCommands_(m_DataAll);
+            LoadDataCommands_.saveDataCommands();
         }
     }
     else if (numMenu == 3) {
         const sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-        auto checkAndToggle = [&](int index, bool& option, bool& isSave) {
-            if (m_RowData[index].square.getGlobalBounds().contains(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y))) {
-                m_RowData[index].value = !m_RowData[index].value;
-                m_RowData[index].updateCheckText();
+        auto checkAndToggle = [&](const int& index, bool& option, bool& isSave) {
+            if (m_OptionsUI_1[index].square.getGlobalBounds().contains(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y))) {
+                m_OptionsUI_1[index].value = !m_OptionsUI_1[index].value;
+                m_OptionsUI_1[index].updateCheckText();
                 option = !option;
                 isSave = true;
             }
@@ -646,6 +701,9 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
         bool isSave = false;
         checkAndToggle(0, m_DataAll.m_OptionsData.autoСlickerKey, isSave);
         checkAndToggle(1, m_DataAll.m_OptionsData.autoСlickerMaus, isSave);
+        checkAndToggle(2, m_DataAll.m_OptionsData.autoSave, isSave);
+        //checkAndToggle(3, m_DataAll.m_OptionsData.autoStart, isSave);
+        checkAndToggle(4, m_DataAll.m_OptionsData.autoSkillsUpgrade, isSave);
 
         if (isSave) {
             m_DataAll.m_OptionsData.saveFileOptions();

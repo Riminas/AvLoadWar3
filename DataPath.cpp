@@ -5,32 +5,30 @@
 #include <unordered_map>
 #include <Windows.h>
 #include <ShlObj_core.h>
-#include "StringToString.h"
-#include "DataPath.h"
 #include <unordered_set>
 #include <shlobj.h>
 #include <locale>
 #include <codecvt>
 #include <psapi.h>
+
+#include "StringToString.h"
 #include "StringConvector.h"
 #include "NewPathSaveCode.h"
+#include "LoadDataFail.h"
+
+#include "DataPath.h"
 
 // Utility function to remove specific characters from a string
-void removeSpecialCharacters(std::string& str) {
-    for (char& c : str) {
-        if (c == '(' || c == ')' || c == ':' || c == '"') {
-            c = ' ';
+void removeSpecialCharacters(std::wstring& wstr) {
+    std::wstring wstr2 = wstr;
+    wstr = L"\0";
+    for (wchar_t& wc : wstr2) {
+        if (wc == L'(' || wc == L')' || wc == L':' || wc == L'"') {
+        }
+        else {
+            wstr += wc;
         }
     }
-}
-
-// Utility function to convert string to lowercase
-std::wstring toLower(const std::wstring& str) {
-    std::wstring result;
-    for (const wchar_t& c : str) {
-        result += std::tolower(c);
-    }
-    return result;
 }
 
 std::wstring DataPath::openWarcraft3() {
@@ -93,9 +91,9 @@ bool DataPath::initializePaths(int& versionWarcraft) {
 
     pathWstr = openWarcraft3();
 
-    if(pathWstr.empty())
+    if(pathWstr.empty() || pathWstr == L"C:\\Windows\\explorer.exe")
         return false;
-
+    
 
     std::wstring pathWar = L"\0";
     std::filesystem::path filePath(pathWstr);
@@ -115,7 +113,6 @@ bool DataPath::initializePaths(int& versionWarcraft) {
             versionWarcraft = 0;
         }
     }
-
 
     if (versionWarcraft == 1) {
         PWSTR path = NULL;
@@ -187,7 +184,7 @@ void  DataPath::sortList(std::vector<DataPath::HeroInfo>& heroList) {
 std::vector<DataPath::HeroInfo> DataPath::parseHeroData(const std::wstring& folderPath) {
     std::unordered_map<std::wstring, HeroInfo> heroDataMap;
 
-    for (const auto & entry : std::filesystem::directory_iterator(folderPath)) {
+    for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
         if (entry.is_directory()) {
             processDirectory(entry, heroDataMap);
         }
@@ -210,37 +207,75 @@ void DataPath::processDirectory(const std::filesystem::directory_entry& dirEntry
 }
 
 void DataPath::processFile(const std::filesystem::directory_entry& fileEntry, std::unordered_map<std::wstring, HeroInfo>& heroDataMap) {
-    std::filesystem::file_time_type fileTime = fileEntry.last_write_time();
-    std::ifstream file(fileEntry.path(), std::ios::binary);
 
 
-    std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    std::string utf8Text(buffer.begin(), buffer.end());
+    //// Открытие файла
+    //std::ifstream file(fileEntry.path(), std::ios::binary);
+    //if (!file.is_open()) {
+    //    return; // Если не удалось открыть файл, выйти из функции
+    //}
 
+    //// Чтение содержимого файла в буфер
+    //std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    //std::string utf8Text(buffer.begin(), buffer.end());
 
-    removeSpecialCharacters(utf8Text);
+    //// Удаление специальных символов из текста
+    //removeSpecialCharacters(utf8Text);
+
+    //// Преобразование текста из UTF-8 в UTF-16
+    //
+    //const std::wstring line = StringConvector_.utf8_to_utf16(utf8Text);
+
+    //// Разделение строки на токены
+    //std::wistringstream iss(line);
+    //std::vector<std::wstring> tokens((std::istream_iterator<std::wstring, wchar_t>(iss)), std::istream_iterator<std::wstring, wchar_t>());
+
+    //std::vector<std::wstring> tokens;
+    //std::wstring currentToken;
+    //for (size_t i = 0; i < line.length(); ++i) {
+    //    if (line[i] == L'\n') {
+    //        if (!currentToken.empty()) {
+    //            tokens.push_back(currentToken);
+    //            currentToken.clear();
+    //        }
+    //        tokens.push_back(L"\n");
+    //    }
+    //    else {
+    //        currentToken += line[i];
+    //    }
+    //}
+
+    LoadDataFail LoadDataFail_;
+    std::vector<std::wstring> tokens = LoadDataFail_.loadDataFailTokens(fileEntry.path());
+
+    if (tokens.size() <= 1)
+        return;
 
     StringConvector StringConvector_;
-    std::wstring line/*(utf8Text.begin(), utf8Text.end()) */= StringConvector_.utf8_to_utf16(utf8Text);
-    std::wistringstream iss(line);
-    std::vector<std::wstring> tokens(std::istream_iterator<std::wstring, wchar_t>{iss}, std::istream_iterator<std::wstring, wchar_t>());
+    // Получение времени последнего изменения файла
+    const auto fileTime = fileEntry.last_write_time();
 
+    // Поиск имени героя в токенах
     for (size_t i = 0; i < tokens.size(); ++i) {
-        if (isHeroToken(toLower(tokens[i])) && isHeroTokenIsTrue(toLower(tokens[i+1]))) {
+        removeSpecialCharacters(tokens[i]);
+        if (isHeroToken(StringConvector_.toLower(tokens[i])) && isHeroTokenIsTrue(StringConvector_.toLower(tokens[i + 1]))) {
             std::wstring heroName = extractHeroName(tokens, i + 1);
+            removeSpecialCharacters(heroName);
 
-            for (int j = 0; j < heroName.size(); j++) {
+            // Обработка символа '|' в имени героя
+            for (size_t j = 0; j < heroName.size(); ++j) {
                 if (heroName[j] == L'|') {
                     if (heroName[j + 1] == L'r' || heroName[j + 1] == L'R') {
-                        heroName = heroName.substr(0, j) + heroName.substr(j + 2);
-                        j -= 1;
+                        heroName.erase(j, 2);
+                        --j;
                     }
                     else if (heroName[j + 1] == L'c' || heroName[j + 1] == L'C') {
-                        heroName = heroName.substr(0, j) + heroName.substr(j + 10);
+                        heroName.erase(j, 10);
                     }
                 }
             }
 
+            // Обновление информации о герое
             HeroInfo& heroInfo = heroDataMap[heroName];
             if (fileTime > heroInfo.latestTime) {
                 heroInfo.latestTime = fileTime;
@@ -250,6 +285,7 @@ void DataPath::processFile(const std::filesystem::directory_entry& fileEntry, st
         }
     }
 
+    // Если имя героя не найдено, используем имя файла как имя героя
     HeroInfo& heroInfo = heroDataMap[fileEntry.path().filename().wstring()];
     if (fileTime > heroInfo.latestTime) {
         heroInfo.latestTime = fileTime;
@@ -274,7 +310,7 @@ bool DataPath::isHeroTokenIsTrue(const std::wstring& token) const {
 std::wstring DataPath::extractHeroName(const std::vector<std::wstring>& tokens, size_t startIndex) const {
     std::wstring heroName = tokens[startIndex];
     for (size_t i = startIndex + 1; i < tokens.size(); ++i) {
-        if (tokens[i] == L"call")
+        if (tokens[i] == L"call" || tokens[i] == L"Level")
             break;
         heroName += L" " + tokens[i];
     }

@@ -13,7 +13,7 @@
 #include "LoadManager.h"
 #include "key.h"
 
-LoadManager::LoadManager(HWND& hWnd)
+LoadManager::LoadManager(const HWND& hWnd)
     : m_TargetWindow(hWnd)
 {
 }
@@ -43,7 +43,7 @@ bool LoadManager::executeLoad(const std::wstring& path) {
             displayCommand("-load");
         }
         
-        sendLoadCommands(codes, true, isLastLoad);
+        sendLoadDataCommands(codes, true, isLastLoad);
 
         if (isLastLoad) {
             Sleep(5000);
@@ -226,7 +226,7 @@ bool LoadManager::IsWindowInFocus(HWND hWnd) {
     return hWnd == hForegroundWnd;
 }
 
-void LoadManager::sendLoadCommands(const std::vector<std::string>& codes, const bool& isDelay, bool isLastLoad) {
+void LoadManager::sendLoadDataCommands(const std::vector<std::string>& codes, const bool& isDelay, bool isLastLoad) {
     for (const auto& code : codes) {
         if (code.empty()) break;
 
