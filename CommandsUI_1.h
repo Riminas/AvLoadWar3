@@ -8,9 +8,9 @@ struct CommandsUI_1 {
     bool value1 = true; // Булевое значение для первого квадрата
     bool value2 = false; // Булевое значение для второго квадрата
     bool useSecondSquare = true; // Булевое значение для включения/отключения второго квадрата
-    sf::RectangleShape button; // Квадратная кнопка
-    sf::Text buttonText; // Текст на кнопке
-    std::wstring buttonName; // Имя кнопки
+    //sf::RectangleShape button; // Квадратная кнопка
+    //sf::Text buttonText; // Текст на кнопке
+    int buttonName; // Имя кнопки
     sf::RectangleShape bottonLine; // Линия
     sf::RectangleShape square; // Первый квадрат
     sf::RectangleShape square2; // Второй квадрат
@@ -27,8 +27,8 @@ struct CommandsUI_1 {
         useSecondSquare = useSecondSquareFlag;
 
         // Сохранение горячей клавиши
-        buttonName = getKeyDescription(hotKeyNameInput);
-
+        //buttonName = getKeyDescription(hotKeyNameInput);
+        buttonName = hotKeyNameInput;
         // Инициализация основного текста
         text.setFont(font);
         text.setString(str);
@@ -67,27 +67,28 @@ struct CommandsUI_1 {
         bottonLine.setSize(sf::Vector2f(0, 1)); // Устанавливаем начальную ширину равной 0
         bottonLine.setFillColor(sf::Color(128, 128, 128)); // Серый цвет
 
-        // Инициализация кнопки
-        button.setSize(sf::Vector2f(squareSize, squareSize)); // Квадратная кнопка
-        button.setFillColor(squareColor); // Цвет кнопки 
+        //// Инициализация кнопки
+        //button.setSize(sf::Vector2f(squareSize * 3, squareSize)); // Квадратная кнопка
+        //button.setFillColor(squareColor); // Цвет кнопки 
 
         // Инициализация текста на кнопке
-        buttonText.setFont(font);
-        if (buttonName != L" " && buttonName != L"\0") {
-            buttonText.setString(buttonName); // Горячая клавиша
-            buttonText.setStyle(0);
-        }
-        else {
-            buttonText.setStyle(1);
-            buttonText.setString(L"..."); // Горячая клавиша
-        }
-        buttonText.setFillColor(textColor);
-        buttonText.setCharacterSize(static_cast<unsigned int>(squareSize * 0.5f)); // Размер шрифта на кнопке
+        //buttonText.setFont(font);
+        //if (buttonName != 0) {
+        //    buttonText.setString((char)buttonName); // Горячая клавиша
+        //    buttonText.setStyle(0);
+        //}
+        //else {
+        //    buttonText.setStyle(1);
+        //    buttonText.setString(L"..."); // Горячая клавиша
+        //}
+        //buttonText.setFillColor(textColor);
+        //buttonText.setCharacterSize(static_cast<unsigned int>(squareSize * 0.5f)); // Размер шрифта на кнопке
+        //updateHotKey(buttonName);
     }
-    // Функция, которая принимает идентификатор клавиши и возвращает std::wstring
-    std::wstring getKeyDescription(int keyInput) {
-        return std::wstring{ (wchar_t)keyInput };
-    }
+    //// Функция, которая принимает идентификатор клавиши и возвращает std::wstring
+    //std::wstring getKeyDescription(int keyInput) {
+    //    return std::wstring{ (wchar_t)keyInput };
+    //}
 
     // Метод для установки позиции
     void setPosition(float x, float y, float windowWidth, float xOutline) {
@@ -98,16 +99,16 @@ struct CommandsUI_1 {
         StringConvector_.adjustTextToFit(text, windowWidth / 2 - xOutline);
 
         // Установка позиции кнопки левее основного текста с расстоянием 10 пикселей
-        button.setPosition(x + 2, y);
+        //button.setPosition(x + 2, y);
 
-        // Центрирование текста на кнопке
-        sf::FloatRect buttonBounds = button.getGlobalBounds();
-        sf::FloatRect buttonTextBounds = buttonText.getLocalBounds();
-        buttonText.setOrigin(buttonTextBounds.left + buttonTextBounds.width / 2.0f, buttonTextBounds.top + buttonTextBounds.height / 2.0f);
-        buttonText.setPosition(buttonBounds.left + buttonBounds.width / 2.0f, buttonBounds.top + buttonBounds.height / 2.0f);
+        //// Центрирование текста на кнопке
+        //sf::FloatRect buttonBounds = button.getGlobalBounds();
+        //sf::FloatRect buttonTextBounds = buttonText.getLocalBounds();
+        //buttonText.setOrigin(buttonTextBounds.left + buttonTextBounds.width / 2.0f, buttonTextBounds.top + buttonTextBounds.height / 2.0f);
+        //buttonText.setPosition(buttonBounds.left + buttonBounds.width / 2.0f, buttonBounds.top + buttonBounds.height / 2.0f);
 
         // Установка позиции основного текста
-        text.setPosition(x + xOutline, y);
+        text.setPosition(x + xOutline , y);
 
         // Установка позиции первого квадрата правее основного текста с расстоянием 30 пикселей
         sf::FloatRect textBounds = text.getGlobalBounds();
@@ -163,20 +164,84 @@ struct CommandsUI_1 {
         }
     }
 
+    //std::string getKeyDescription(int vkCode) {
+    //    static std::unordered_map<int, std::string> keyNames = {
+    //        {VK_SPACE, "Space"},
+    //        {VK_LMENU, "L Alt"},
+    //        {VK_LCONTROL, "L Ctrl"},
+    //        {VK_TAB, "Tab"},
+    //        {VK_RMENU, "R Alt"},
+    //        {VK_NUMPAD0, "Num 0"},
+    //        {VK_NUMPAD1, "Num 1"},
+    //        {VK_NUMPAD2, "Num 2"},
+    //        {VK_NUMPAD3, "Num 3"},
+    //        {VK_NUMPAD4, "Num 4"},
+    //        {VK_NUMPAD5, "Num 5"},
+    //        {VK_NUMPAD6, "Num 6"},
+    //        {VK_NUMPAD7, "Num 7"},
+    //        {VK_NUMPAD8, "Num 8"},
+    //        {VK_NUMPAD9, "Num 9"},
+    //        {VK_RETURN, "Enter"},
+    //        {VK_BACK, "Backspace"},
+    //        {VK_DELETE, "Delete"},
+    //        {VK_ESCAPE, "Escape"},
+    //        {VK_SHIFT, "Shift"},
+    //        {VK_CONTROL, "Ctrl"},
+    //        {VK_MENU, "Alt"},
+    //        {VK_LEFT, "Left Arrow"},
+    //        {VK_RIGHT, "Right Arrow"},
+    //        {VK_UP, "Up Arrow"},
+    //        {VK_DOWN, "Down Arrow"},
+    //        {VK_HOME, "Home"},
+    //        {VK_END, "End"},
+    //        {VK_PRIOR, "Page Up"},
+    //        {VK_NEXT, "Page Down"},
+    //        {VK_INSERT, "Insert"},
+    //        {VK_F1, "F1"},
+    //        {VK_F2, "F2"},
+    //        {VK_F3, "F3"},
+    //        {VK_F4, "F4"},
+    //        {VK_F5, "F5"},
+    //        {VK_F6, "F6"},
+    //        {VK_F7, "F7"},
+    //        {VK_F8, "F8"},
+    //        {VK_F9, "F9"},
+    //        {VK_F10, "F10"},
+    //        {VK_F11, "F11"},
+    //        {VK_F12, "F12"},
+    //        {VK_CAPITAL, "Caps Lock"},
+    //        {VK_NUMLOCK, "Num Lock"},
+    //        {VK_SCROLL, "Scroll Lock"}
+    //        // Добавьте остальные нужные клавиши
+    //    };
+
+    //    auto it = keyNames.find(vkCode);
+    //    if (it != keyNames.end()) {
+    //        return it->second;
+    //    }
+    //    else if (std::isalpha(vkCode) || std::isdigit(vkCode)) {
+    //        return std::string(1, static_cast<char>(vkCode));
+    //    }
+    //    else {
+    //        return "Unknown";
+    //    }
+    //}
+
     void updateHotKey(const int& hotKeyNameInput) {
-        buttonName = getKeyDescription(hotKeyNameInput);
-        if (buttonName != L"" && buttonName != L"\0") {
-            buttonText.setString(buttonName); // Горячая клавиша
-            buttonText.setStyle(0);
-        }
-        else {
-            buttonText.setStyle(1);
-            buttonText.setString(L"..."); // Горячая клавиша
-        }
+        ////buttonName = getKeyDescription(hotKeyNameInput);
+        //std::string buttonName = getKeyDescription(hotKeyNameInput);
+        //if (!buttonName.empty()) {
+        //    buttonText.setString(buttonName); // Горячая клавиша
+        //    buttonText.setStyle(0);
+        //}
+        //else {
+        //    buttonText.setStyle(1);
+        //    buttonText.setString(L"..."); // Горячая клавиша
+        //}
         // Центрирование текста на кнопке
-        sf::FloatRect buttonBounds = button.getGlobalBounds();
-        sf::FloatRect buttonTextBounds = buttonText.getLocalBounds();
-        buttonText.setOrigin(buttonTextBounds.left + buttonTextBounds.width / 2.0f, buttonTextBounds.top + buttonTextBounds.height / 2.0f);
-        buttonText.setPosition(buttonBounds.left + buttonBounds.width / 2.0f, buttonBounds.top + buttonBounds.height / 2.0f);
+        //sf::FloatRect buttonBounds = button.getGlobalBounds();
+        //sf::FloatRect buttonTextBounds = buttonText.getLocalBounds();
+        //buttonText.setOrigin(buttonTextBounds.left + buttonTextBounds.width / 2.0f, buttonTextBounds.top + buttonTextBounds.height / 2.0f);
+        //buttonText.setPosition(buttonBounds.left + buttonBounds.width / 2.0f, buttonBounds.top + buttonBounds.height / 2.0f);
     }
 };

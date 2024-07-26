@@ -68,7 +68,7 @@ bool DataMaps::loadDatFail(const std::wstring& fullPath) {
     //// Конвертируем прочитанный текст в std::wstring
     //m_PutSaveCode = utf8_to_utf16(utf8Text);
 
-    if(std::filesystem::is_directory((fullPath + m_PutSaveCode)))
+    if(!m_PutSaveCode.empty() && std::filesystem::is_directory((fullPath + m_PutSaveCode)))
         return true;
     return false;
 }

@@ -17,6 +17,9 @@ LoadManager::LoadManager(const HWND& hWnd)
     : m_TargetWindow(hWnd)
 {
 }
+LoadManager::LoadManager()
+{
+}
 
 bool LoadManager::executeLoad(const std::wstring& path) {
     m_FilePath = path;
@@ -248,6 +251,12 @@ void LoadManager::sendLoadDataCommands(const std::vector<std::string>& codes, co
         Sleep(10);
         std::cout << "codes: ( " << code << " )" << std::endl;
     }
+}
+
+void LoadManager::sendLoadDataCommandFast(const std::string& codes)
+{
+    if (codes.empty()) return;
+    displayCommand(codes);
 }
 
 bool LoadManager::checkKeyPressed() {

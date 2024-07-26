@@ -14,12 +14,13 @@
 #include "key.h"
 #include "LoadDataCommands.h"
 #include "StringConvector.h"
+#include "GlobalVarible.h"
 #include "EngineDataCommands.h"
 
 bool isExetTree = false;
 
 // Глобальные переменные для хуков
-HHOOK g_hHook = NULL;
+//HHOOK g_hHook = NULL;
 std::unordered_map<int, std::chrono::high_resolution_clock::time_point> keyPressTimes;
 
 Engine::Engine()
@@ -29,15 +30,17 @@ Engine::Engine()
 }
 
 NOTIFYICONDATA nid;
+#include "Engine.h"
+#include <windows.h>
+#include <chrono>
+#include "LoadManager.h"
+#include "key.h"
 
-void Engine::engine1()
-{
+void Engine::engine1() {
     if (!initialize())
         return;
 
     while (m_Window.isOpen()) {
-
-        // Обработка сообщений Windows
         MSG msg;
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             TranslateMessage(&msg);
@@ -51,13 +54,13 @@ void Engine::engine1()
         // Проверка autoSave и времени
         if (m_DataAll.m_OptionsData.autoSave && m_DataAll.m_OptionsData.isStaitAuto && m_IsVisibleOwnerWindow) {
             auto currentTime = std::chrono::high_resolution_clock::now();
-            auto duration = duration_cast<std::chrono::milliseconds>(currentTime - m_DataAll.m_OptionsData.lastSaveTime).count();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - m_DataAll.m_OptionsData.lastSaveTime).count();
 
             if (duration >= m_DataAll.m_OptionsData.timeDelay) {
                 // Вызов функции сохранения
                 LoadManager LoadManager_(m_DataAll.m_DataPath.m_hWndWindow);
                 LoadManager_.sendLoadDataCommands({ m_DataAll.m_DataCommands.saveCmd.str }, false);
-                
+
                 // Обновление времени последнего сохранения
                 m_DataAll.m_OptionsData.lastSaveTime = currentTime;
             }
@@ -125,7 +128,7 @@ void Engine::updateWindowVisibility()
             m_DataAll.m_DataMaps.m_PutSaveCode = m_DataAll.m_DataMaps.m_LastPathSaveCode;
         }
 
-        //m_EngineFileTip2.activeGameTrue(hWndWindow);
+        m_EngineFileTip2.activeGameTrue(hWndWindow);
         
         m_IsVisibleOwnerWindow = true;
 
@@ -468,6 +471,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 
 void Engine::initializeTree() {
+
     // Получаем HWND окна
     hWnd = m_Window.getSystemHandle();
     std::wstring wstr = L"AVLoad_Tree";

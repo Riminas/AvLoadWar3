@@ -19,7 +19,6 @@ void NewDataAll::newMaps(const bool& isNoDataCommands, const bool& isOptions)
         m_DataAll.isNewMaps = false;
         m_DataAll.isMapsStart = true;
         //m_DataAll.isMapsStart = false;
-        return; 
     }
     else {
         m_DataAll.isMapsStart = true;
@@ -37,8 +36,11 @@ void NewDataAll::newMaps(const bool& isNoDataCommands, const bool& isOptions)
         const bool isNewDirectory{ (m_DataAll.isNewMaps == false && isNoDataCommands) || isOptions };
         if (isNewDirectory) {
 
-            //int num = m_DataAll.m_DataMaps.PutSaveCode(m_DataAll.m_DataPath.getSavePath());
-            if (isNewDirectory/* || (isNoDataCommands && num == 2)*/) {
+            int num = m_DataAll.m_DataMaps.PutSaveCode(m_DataAll.m_DataPath.getSavePath());
+            if (num == 1 && !isOptions) {
+                isNewMaps = true;
+            }
+            else if (isOptions || (isNoDataCommands &&( num == 2 || num == 0))) {
 
                 sf::Vector2f newPosition(0, 0);
                 bool faic = false;

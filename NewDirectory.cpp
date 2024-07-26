@@ -11,6 +11,7 @@
 #include <fstream>
 #include "LoadDataCommands.h"
 #include "StringConvector.h"
+#include "GlobalVarible.h"
 
 #include "NewDirectory.h"
 #include <unordered_set>
@@ -68,13 +69,17 @@ void NewDirectory::initializeWindow() {
     initializeText(selectedTextYes, L"Подтвердить выбор", newPosition + sf::Vector2f{ windowWidth / 2, windowHeight - 28 });
     initializeRectangle(topBackground, sf::Vector2f(windowWidth, topLine.getPosition().y - newPosition.y + 3), sf::Vector2f(0, -15) + newPosition);
     initializeRectangle(bottomBackground, sf::Vector2f(windowWidth, 35), sf::Vector2f(newPosition.x, bottomLine.getPosition().y - 1));
+    initializeRectangle(coutHotKeyShape, sf::Vector2f(200, 30), sf::Vector2f(background.getSize().x / 2 - 100, background.getSize().y/2 - 60) + newPosition, sf::Color(240,240,240));
+    initializeText(coutHotKeyText, L"Нажмите клавишу", coutHotKeyShape.getPosition() + sf::Vector2f{ 10, 2 });
+    coutHotKeyShape.setOutlineColor(sf::Color::Black);
+    coutHotKeyShape.setOutlineThickness(1);
 
     const std::vector<std::pair<std::wstring, std::pair<sf::RectangleShape&, sf::Text&>>> nameRazels = {
         {L"Directory", {directoryButton, directoryText}},
         {L"DataCommands", {DataCommandsButton, DataCommandsText}},
         {L"Options", {optionsButton, optionsText}},
     };
-    const int maxSize = nameRazels.size();
+    const int maxSize = (int)nameRazels.size();
 
     for (int i = 0; i < maxSize; ++i) {
         const auto& [name, components] = nameRazels[i];
@@ -158,10 +163,10 @@ void NewDirectory::initializeDataCommands() {
 
 void NewDirectory::initializeSettings() {
     const std::vector<std::tuple<std::string, sf::Vector2f, bool>> settings = {
-        {"Автонажатия клавишь", {20, 70}, m_DataAll.m_OptionsData.autoСlickerKey},
-        {"Автонажатия правой кнопки мыши", {20, 100}, m_DataAll.m_OptionsData.autoСlickerMaus},
-        {"Автосохранения", {20, 130}, m_DataAll.m_OptionsData.autoSave},
-        {"Авто запуск (нерабоатет)", {20, 160}, m_DataAll.m_OptionsData.autoStart},
+        {"Авто нажатия клавиш", {20, 70}, m_DataAll.m_OptionsData.autoСlickerKey},
+        {"Авто нажатия правой кнопки мыши", {20, 100}, m_DataAll.m_OptionsData.autoСlickerMaus},
+        {"Авто сохранения", {20, 130}, m_DataAll.m_OptionsData.autoSave},
+        {"Авто запуск (не работает)", {20, 160}, m_DataAll.m_OptionsData.autoStart},
         {"Авто прокачка способностей", {20, 190}, m_DataAll.m_OptionsData.autoSkillsUpgrade},
     };
 
@@ -327,9 +332,9 @@ int NewDirectory::newDirectory() {
     std::wstring folderPath = run();
 
     // Проверка, пуст ли путь
-    if (folderPath == L"Exet") {
+    if (folderPath == L"Exit") {
         if(m_DataAll.m_DataMaps.m_PutSaveCode.empty())
-            m_DataAll.m_DataMaps.m_PutSaveCode = L"Exet";
+            m_DataAll.m_DataMaps.m_PutSaveCode = L"Exit";
         std::wcerr << "folderPath1.empty()" << std::endl;
         return 2;
     }
@@ -413,6 +418,11 @@ void NewDirectory::drawWindow() {
 
         for (CommandsUI_1& p : m_CommandsUI_1)
             p.drawDataCommands(window);
+
+        if (m_IsRunning) {
+            window.draw(coutHotKeyShape);
+            window.draw(coutHotKeyText);
+        }
     }
     else if (numMenu == 3) {
         for (OptionsUI_1& p : m_OptionsUI_1)
@@ -485,7 +495,7 @@ std::wstring NewDirectory::newPath() {
 std::wstring NewDirectory::handleMousePress(sf::Event& event) {
     if (event.mouseButton.button != sf::Mouse::Left)
         return L"";
-
+    
     const sf::Vector2f mouseButton{ static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y) };
 
     // Определяем действия для каждой кнопки меню
@@ -494,14 +504,14 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
             if (numMenu != 1) {
                 numMenu = 1;
                 activeMenu();
-                title.setString(L"Maps: " + nameMaps);
+                title.setString(L"Maps: " + m_DataAll.m_DataMaps.m_NameMapsFull);
             }
         }},
         {&DataCommandsButton, [&]() {
             if (numMenu != 2) {
                 numMenu = 2;
                 activeMenu();
-                title.setString(L"Maps: " + nameMaps);
+                title.setString(L"Maps: " + m_DataAll.m_DataMaps.m_NameMapsFull);
             }
         }},
         {&optionsButton, [&]() {
@@ -514,7 +524,7 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
     };
 
     if (closeButton.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
-        return L"Exet";
+        return L"Exit";
     }
 
     // Проверяем, нажата ли одна из кнопок меню
@@ -549,18 +559,18 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
 
         std::function<bool(DirectoryEntry&, int)> processClick = [&](DirectoryEntry& dir, int indent) {
             if (dir.isOpen) {
-                const sf::Vector2f mouseButtin{ mouseButton.x, mouseButton.y };
+                const sf::Vector2f mouseButton2{ mouseButton.x, mouseButton.y };
                 for (auto& subDir : dir.subDirectories) {
                     sf::FloatRect textBounds(newPosition.x, yOffset + newPosition.y, background.getSize().x - 60, 30);
 
                     if (!subDir.subDirectories.empty()) {
                         sf::FloatRect triangleBounds(10 + indent * 20 + newPosition.x, yOffset + newPosition.y, 25, 25);
-                        if (triangleBounds.contains(mouseButtin.x, mouseButtin.y)) {
+                        if (triangleBounds.contains(mouseButton2.x, mouseButton2.y)) {
                             toggleDirectory(subDir);
                             return true;
                         }
                     }
-                    if (mouseButtin.y <= bottomLine.getPosition().y && textBounds.contains(mouseButtin.x, mouseButtin.y)) {
+                    if (mouseButton2.y <= bottomLine.getPosition().y && textBounds.contains(mouseButton2.x, mouseButton2.y)) {
                         openDirectoryEntry = subDir;
                         subDir.isOpen = true;
                         updateDirectoryTexts();
@@ -590,11 +600,11 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
                 isSquare = 2;
                 break;
             }
-            else if (m_CommandsUI_1[i].button.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
-                numDataCommands = i;
-                isSquare = 3;
-                break;
-            }
+            //else if (m_CommandsUI_1[i].button.getGlobalBounds().contains(mouseButton.x, mouseButton.y)) {
+            //    numDataCommands = i;
+            //    isSquare = 3;
+            //    break;
+            //}
         }
 
         if (isSquare != 0) {
@@ -607,26 +617,39 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
             else if (isSquare == 2) {
                 cmdData.value2 = !cmdData.value2;
             }
-            //else if (isSquare == 3) {
-            //    bool isRunning = true;
-            //    while (isRunning) {
-            //        for (int key = 8; key <= 255; key++) {
-            //            if (GetAsyncKeyState(key) & 0x8000) {
-            //                if (key == VK_BACK) {
-            //                    hotKeyNew = 0;
-            //                    isRunning = false;
-            //                    break;
-            //                }
-            //                else {
-            //                    hotKeyNew = static_cast<int>(key);
-            //                    isRunning = false;
-            //                    break;
-            //                }
-            //            }
-            //        }
-            //        Sleep(50); // небольшой сон, чтобы не загружать процессор
-            //    }
-            //}
+            else if (isSquare == 3) {
+                m_IsRunning = true;
+                drawWindow();
+                G_IS_OPTIONS_HOT_KEY = true;
+                while (true) {
+                    if (!G_HISTORY_HOT_KEY.empty())
+                        break;
+                    //for (int key = 8; key <= 255; key++) {
+                    //    if (GetAsyncKeyState(key) & 0x8000) {
+                    //        if (key == VK_BACK) {
+                    //            hotKeyNew = 0;
+                    //            m_IsRunning = false;
+                    //            break;
+                    //        }
+                    //        else {
+                    //            hotKeyNew = static_cast<int>(key);
+                    //            m_IsRunning = false;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
+                    Sleep(50); // небольшой сон, чтобы не загружать процессор
+                }
+                G_IS_OPTIONS_HOT_KEY = false;
+                if (G_HISTORY_HOT_KEY[0] == VK_BACK) {
+                    hotKeyNew = 0;
+                }
+                else {
+                    hotKeyNew = G_HISTORY_HOT_KEY[0];
+                }
+                G_HISTORY_HOT_KEY.clear();
+                m_IsRunning = false;
+            }
 
             std::vector<std::function<void()>> DataCommands = {
                 [&] { m_DataAll.m_DataCommands.return1Cmd.isVisibleButton = !m_DataAll.m_DataCommands.return1Cmd.isVisibleButton; },
@@ -658,18 +681,20 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
                 [&] { m_DataAll.m_DataCommands.intCmd.isLoad = !m_DataAll.m_DataCommands.intCmd.isLoad; }
             };
 
-            //std::vector<std::function<void()>> hotKeyVector = {
-            //    [&] { m_DataAll.m_DataCommands.returnCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.saveCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.craftCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.camCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.statsCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.clearCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.cleanCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.strCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.agiCmd.hotKey = hotKeyNew; },
-            //    [&] { m_DataAll.m_DataCommands.intCmd.hotKey = hotKeyNew; }
-            //};
+            std::vector<std::function<void()>> hotKeyVector = {
+                [&] { m_DataAll.m_DataCommands.return1Cmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.return2Cmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.return3Cmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.saveCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.craftCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.camCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.statsCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.clearCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.cleanCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.strCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.agiCmd.hotKey = hotKeyNew; },
+                [&] { m_DataAll.m_DataCommands.intCmd.hotKey = hotKeyNew; }
+            };
 
             if (isSquare == 1) {
                 DataCommands[numDataCommands]();
@@ -677,10 +702,10 @@ std::wstring NewDirectory::handleMousePress(sf::Event& event) {
             else if (isSquare == 2) {
                 loadDataCommands[numDataCommands]();
             }
-            //else if (isSquare == 3) {
-            //    hotKeyVector[numDataCommands]();
-            //    cmdData.updateHotKey(hotKeyNew);
-            //}
+            else if (isSquare == 3) {
+                hotKeyVector[numDataCommands]();
+                cmdData.updateHotKey(hotKeyNew);
+            }
 
             cmdData.updateCheckText();
             LoadDataCommands LoadDataCommands_(m_DataAll);

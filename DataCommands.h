@@ -17,18 +17,18 @@ public:
             : str(t_str), isVisibleButton(t_isVisibleButton), isLoad(t_isLoad), hotKey(t_hotKey) {}
     };
 
-    Command return1Cmd{ "-suicide", true, false, '\0' };
-    Command return2Cmd{ "-2", false, false, '\0' };
-    Command return3Cmd{ "-3", false, false, '\0' };
-    Command saveCmd{ "-save", true, false, '\0' };
-    Command craftCmd{ "-create", true, false, '\0' };
-    Command camCmd{ "-cam 150", true, false, '\0' };
-    Command statsCmd{ "-stats", false, false, '\0' };
-    Command clearCmd{ "-clear", false, false, '\0' };
-    Command cleanCmd{ "-clean", false, false, '\0' };
-    Command strCmd{ "-str 10", false, false, '\0' };
-    Command agiCmd{ "-agi 10", false, false, '\0' };
-    Command intCmd{ "-int 10", false, false, '\0' };
+    Command return1Cmd{ "-suicide", true, false, 0 };
+    Command return2Cmd{ "-2", false, false, 0 };
+    Command return3Cmd{ "-3", false, false, 0 };
+    Command saveCmd{ "-save", true, false, 0x34 };
+    Command craftCmd{ "-create", true, false, 0 };
+    Command camCmd{ "-cam 150", true, false, 0 };
+    Command statsCmd{ "-stats", false, false, 0x35 };
+    Command clearCmd{ "-clear", false, false, 0 };
+    Command cleanCmd{ "-clean", false, false, 0 };
+    Command strCmd{ "-str 10", false, false, 0 };
+    Command agiCmd{ "-agi 10", false, false, 0 };
+    Command intCmd{ "-int 10", false, false, 0 };
 
     std::unordered_map<std::string, Command> commandMapDefault = {
         {"[Return1]", return1Cmd},

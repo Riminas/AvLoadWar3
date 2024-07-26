@@ -84,6 +84,9 @@
     <ClCompile Include="CoutButtonUser.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalVarible.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AVscils.rc">
@@ -163,6 +166,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="CoutButtonUser.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalVarible.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

@@ -186,6 +186,7 @@
     <ClCompile Include="EngineFileTip1.cpp" />
     <ClCompile Include="EngineFileTip2.cpp" />
     <ClCompile Include="getMapOpen.cpp" />
+    <ClCompile Include="GlobalVarible.cpp" />
     <ClCompile Include="key.cpp" />
     <ClCompile Include="LoadDataCommands.cpp" />
     <ClCompile Include="LoadDataFail.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="EngineFileTip1.h" />
     <ClInclude Include="EngineFileTip2.h" />
     <ClInclude Include="getMapOpen.h" />
+    <ClInclude Include="GlobalVarible.h" />
     <ClInclude Include="key.h" />
     <ClInclude Include="LoadDataCommands.h" />
     <ClInclude Include="LoadDataFail.h" />

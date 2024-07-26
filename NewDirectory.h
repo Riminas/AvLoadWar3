@@ -67,6 +67,8 @@ private:
     sf::Text optionsText;
     sf::RectangleShape bottomLineCommandsUI_1;
     DirectoryEntry rootDirectory;
+    sf::Text coutHotKeyText;
+    sf::RectangleShape coutHotKeyShape;
     std::vector<sf::Text> directoryTexts;
     std::vector<sf::ConvexShape> directoryTriangles; // Добавлено
     float scrollOffset = 0;
@@ -81,6 +83,7 @@ private:
     const std::wstring pathDatMapPut = L"DataMaps";
     const std::wstring pathFile = L"\\Path.dat";
     bool& isExetTree;
+    bool m_IsRunning = false;
     int numMenu = 1;
     std::vector<CommandsUI_1> m_CommandsUI_1;
     std::vector<OptionsUI_1> m_OptionsUI_1;

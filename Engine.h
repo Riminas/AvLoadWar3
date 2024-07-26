@@ -11,6 +11,8 @@ public:
     Engine();
     void engine1();
 
+    // Метод для получения экземпляра класса Engine
+    DataAll m_DataAll;
 private:
     bool IsWindowInFocus(HWND hWnd);
     void updateWindowVisibility();
@@ -27,7 +29,6 @@ private:
     void checkKeyStates();
 
     sf::RenderWindow m_Window;
-    DataAll m_DataAll;
 
     sf::Font m_Font;
     OwnerWindow m_OwnerWindow;

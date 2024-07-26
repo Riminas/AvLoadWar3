@@ -4,9 +4,146 @@
 #include <wtypes.h>
 #include <windows.h>
 
+#include "DataCommands.h"
+#include "LoadManager.h"
 #include "Engine.h"
-
-
+//
+//#include <Windows.h>
+//#include <iostream>
+//#include "key.h"
+//
+//DataCommands DataCommands_;
+//// Обработчик событий клавиатуры
+//LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+//    if (nCode == HC_ACTION) {
+//        KBDLLHOOKSTRUCT* pKeyboard = (KBDLLHOOKSTRUCT*)lParam;
+//
+//        // Проверка активного окна
+//        HWND hWndForeground = GetForegroundWindow();
+//        wchar_t windowTitle[256];
+//        GetWindowText(hWndForeground, windowTitle, sizeof(windowTitle) / sizeof(windowTitle[0]));
+//        if (wcscmp(windowTitle, L"Warcraft III") != 0) {
+//            return CallNextHookEx(NULL, nCode, wParam, lParam);
+//        }
+//
+//        if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+//            for (auto& p : DataCommands_.commandMap) {
+//                if (pKeyboard->vkCode == p.second->hotKey && p.second->hotKey != 0) {
+//                    key key_;
+//                    key_.key1(0x0D); // Enter to open chat
+//
+//                    if (!OpenClipboard(nullptr)) {
+//                        throw std::runtime_error("Unable to open clipboard");
+//                    }
+//
+//                    // Очищаем буфер обмена
+//                    if (!EmptyClipboard()) {
+//                        CloseClipboard();
+//                        throw std::runtime_error("Unable to empty clipboard");
+//                    }
+//
+//                    // Определяем размер буфера
+//                    HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, p.second->str.size() + 1);
+//                    if (!hGlobal) {
+//                        CloseClipboard();
+//                        throw std::runtime_error("Unable to allocate global memory");
+//                    }
+//
+//                    // Копируем текст в глобальную память
+//                    memcpy(GlobalLock(hGlobal), p.second->str.c_str(), p.second->str.size() + 1);
+//                    GlobalUnlock(hGlobal);
+//
+//                    // Устанавливаем текст в буфер обмена
+//                    if (!SetClipboardData(CF_TEXT, hGlobal)) {
+//                        GlobalFree(hGlobal);
+//                        CloseClipboard();
+//                        throw std::runtime_error("Unable to set clipboard data");
+//                    }
+//
+//                    CloseClipboard();
+//
+//
+//                    key_.simulatePaste();
+//                    key_.key1(0x0D); // Enter to close chat
+//
+//                    //LoadManager LoadManager_(GetForegroundWindow());
+//                    //LoadManager_.sendLoadDataCommands({ p .second->str});
+//                    return 1; // блокируем оригинальное нажатие
+//                }
+//            }
+//        }
+//    }
+//
+//    return CallNextHookEx(NULL, nCode, wParam, lParam);
+//}
+//
+//// Обработчик событий мыши
+//LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
+//    if (nCode == HC_ACTION) {
+//        // Проверка активного окна
+//        HWND hWndForeground = GetForegroundWindow();
+//        wchar_t windowTitle[256];
+//        GetWindowText(hWndForeground, windowTitle, sizeof(windowTitle) / sizeof(windowTitle[0]));
+//        if (wcscmp(windowTitle, L"Warcraft III") != 0) {
+//            return CallNextHookEx(NULL, nCode, wParam, lParam);
+//        }
+//
+//        // Проверка, является ли событие инъекцией
+//        if (isInjectedEvent) {
+//            return 1; // Блокируем оригинальное нажатие
+//        }
+//
+//        if (wParam == 0x05) {
+//            key key_;
+//            key_.key1(VK_NUMPAD7);
+//            return 1; // Блокируем оригинальное нажатие
+//        }
+//        else if (wParam == 0x06) {
+//            key key_;
+//            key_.key1(VK_NUMPAD8);
+//            return 1; // Блокируем оригинальное нажатие
+//        }
+//    }
+//
+//    return CallNextHookEx(NULL, nCode, wParam, lParam);
+//}
+//
+//
+//int main() {
+//    SetConsoleOutputCP(CP_UTF8); // Устанавливаем кодировку консоли на UTF-8
+//
+//    std::locale::global(std::locale("Russian"));
+//    std::wcout.imbue(std::locale());
+//
+//    HWND hWndWindow = FindWindow(NULL, L"AvLoads");
+//    if (hWndWindow != NULL) {
+//        MessageBox(NULL, L"Программа уже запущена.", L"Ошибка", MB_OK | MB_ICONEXCLAMATION);
+//        return 1;
+//    }
+//
+//    HHOOK hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
+//    HHOOK hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, NULL, 0);
+//
+//    if (hKeyboardHook == NULL || hMouseHook == NULL) {
+//        std::cerr << "Failed to set hooks!" << std::endl;
+//        MessageBox(NULL, L"Failed to set hooks!", L"Ошибка", MB_OK | MB_ICONEXCLAMATION);
+//        return 1;
+//    }
+//
+//    MSG msg;
+//    while (GetMessage(&msg, NULL, 0, 0)) {
+//        TranslateMessage(&msg);
+//        DispatchMessage(&msg);
+//    }
+//    UnhookWindowsHookEx(hKeyboardHook);
+//    UnhookWindowsHookEx(hMouseHook);
+//
+//    return 0;
+//}
+// 
+// 
+// 
+ 
 int main()
 {
     SetConsoleOutputCP(CP_UTF8); // Устанавливаем кодировку консоли на UTF-8

@@ -12,6 +12,7 @@
 #include "getMapOpen.h"
 #include "NewDirectory.h"
 #include "EngineDataCommands.h"
+#include "GlobalVarible.h"
 #include "SkillsUpgradeStart.h"
 
 OwnerWindow::OwnerWindow(sf::RenderWindow& t_Window, sf::Font& t_Font, DataAll& t_DataAll, bool& t_isExetTree, bool& t_IsVisibleLoad)
@@ -187,7 +188,7 @@ void OwnerWindow::processingButtonMenu(const sf::Vector2i& event, bool isWindow2
         m_Window.clear(sf::Color(0, 255, 0));
         draw();
         m_Window.display();
-
+        
         EngineFileTip1 EngineFileTip1_(m_Window, m_Font, m_DataAll);
         EngineFileTip1_.engineFile();
 
@@ -202,6 +203,7 @@ void OwnerWindow::processingButtonMenu(const sf::Vector2i& event, bool isWindow2
         isWindow2Visible[0] = !isWindow2Visible[0];
     }
     else if (numButton == 2) {
+        G_IS_ACTIVITI_HOT_KEY = false;
         NewDataAll NewDataAll_(m_DataAll, m_Window, m_Font);
         NewDataAll_.newMaps(true, true);
 
@@ -212,23 +214,24 @@ void OwnerWindow::processingButtonMenu(const sf::Vector2i& event, bool isWindow2
         m_Window.display();
 
         updateButtonsVisible();
+        G_IS_ACTIVITI_HOT_KEY = true;
     }
-    else if (numButton == 3) {
+    //else if (numButton == 3) {
 
-        m_IsVisibleMenu = false;
-        m_IsVisibleLoad = true;
+    //    m_IsVisibleMenu = false;
+    //    m_IsVisibleLoad = true;
 
 
-        m_Window.clear(sf::Color(0, 255, 0));
-        draw();
-        m_Window.display();
+    //    m_Window.clear(sf::Color(0, 255, 0));
+    //    draw();
+    //    m_Window.display();
 
-        const std::wstring& nameMaps(m_DataAll.m_DataMaps.getNameMaps());
-        SkillsUpgradeStart ScilsUpgradeStart_(nameMaps, m_DataAll.versionWarcraft3);
-        ScilsUpgradeStart_.skillsUpgradeStart(false);
+    //    const std::wstring& nameMaps(m_DataAll.m_DataMaps.getNameMaps());
+    //    SkillsUpgradeStart ScilsUpgradeStart_(nameMaps, m_DataAll.versionWarcraft3);
+    //    ScilsUpgradeStart_.skillsUpgradeStart(false);
 
-        m_IsVisibleLoad = false;
-    }
+    //    m_IsVisibleLoad = false;
+    //}
 }
 
 int OwnerWindow::mouseButtonMenuPressed(const sf::Vector2i& event, bool isWindow2Visible[])
@@ -244,10 +247,10 @@ int OwnerWindow::mouseButtonMenuPressed(const sf::Vector2i& event, bool isWindow
             else if (i == 2) {
                 return 2;
             }
+            //else if (i == 3) {
+            //    return 3;
+            //}
             else if (i == 3) {
-                return 3;
-            }
-            else if (i == 4) {
                 return -1;
             }
         }
@@ -348,7 +351,7 @@ void OwnerWindow::initialize() {
         "dataAvLoad\\img\\upload.png", 
         "dataAvLoad\\img\\upLoadAll.png", 
         "dataAvLoad\\img\\options.png",
-        "dataAvLoad\\img\\avskills.png",
+        //"dataAvLoad\\img\\avskills.png",
         "dataAvLoad\\img\\exit.png",};
     //const std::vector<std::string> buttonTextures = {  };
     m_ButtonsMenu.resize(buttonMenuTextures.size());
